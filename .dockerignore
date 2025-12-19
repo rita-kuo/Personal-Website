@@ -1,0 +1,7 @@
+node_modules
+.next
+.env
+prisma/dev.db
+dist
+npm-debug.log*
+.DS_Store

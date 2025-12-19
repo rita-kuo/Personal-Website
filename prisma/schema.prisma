@@ -1,0 +1,52 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum ActionType {
+  IMAGE
+  IOT
+  NONE
+}
+
+model Game {
+  id        String   @id @default(cuid())
+  name      String
+  slug      String   @unique
+  levels    Level[]
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Level {
+  id         String        @id @default(cuid())
+  game       Game          @relation(fields: [gameId], references: [id])
+  gameId     String
+  name       String
+  slug       String
+  // ordering of levels within a game
+  order      Int?
+  details    LevelDetail[]
+  createdAt  DateTime      @default(now())
+  updatedAt  DateTime      @updatedAt
+
+  @@index([gameId])
+  @@unique([gameId, slug])
+}
+
+model LevelDetail {
+  id         String     @id @default(cuid())
+  level      Level      @relation(fields: [levelId], references: [id])
+  levelId    String
+  actionType ActionType @default(NONE)
+  content    String
+  meta       Json?
+  createdAt  DateTime   @default(now())
+  updatedAt  DateTime   @updatedAt
+
+  @@index([levelId])
+}
+

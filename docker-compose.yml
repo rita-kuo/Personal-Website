@@ -1,0 +1,36 @@
+version: '3.8'
+services:
+    db:
+        image: postgres:15
+        restart: unless-stopped
+        environment:
+            POSTGRES_DB: mydb
+            POSTGRES_USER: postgres
+            POSTGRES_PASSWORD: password
+        volumes:
+            - db-data:/var/lib/postgresql/data
+        ports:
+            - '5432:5432'
+
+    redis:
+        image: redis:7
+        restart: unless-stopped
+        ports:
+            - '6379:6379'
+
+    app:
+        build:
+            context: .
+            args:
+                DATABASE_URL: 'postgresql://postgres:password@db:5432/mydb?schema=public'
+        environment:
+            - DATABASE_URL=postgresql://postgres:password@db:5432/mydb?schema=public
+            - REDIS_URL=redis://redis:6379
+        depends_on:
+            - db
+            - redis
+        ports:
+            - '3000:3000'
+
+volumes:
+    db-data:
