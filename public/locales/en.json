@@ -8,5 +8,25 @@
         "loginButton": "Log in with LINE",
         "accessDenied": "Access Denied: Your email is not authorized",
         "unknownError": "An unknown error occurred. Please try again later."
+    },
+    "sys": {
+        "title": "Management Platform",
+        "menu": {
+            "game": "Game Management"
+        },
+        "user": {
+            "logout": "Logout"
+        },
+        "dashboard": {
+            "title": "Dashboard",
+            "welcome": "Welcome back, {name}!",
+            "recentGames": "Recent Games",
+            "viewAll": "View All",
+            "noGames": "No games found.",
+            "table": {
+                "name": "Name",
+                "updatedAt": "Last Updated"
+            }
+        }
     }
 }
