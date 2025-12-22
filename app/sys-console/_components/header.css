@@ -11,13 +11,22 @@
     justify-content: space-between;
 }
 
-.menu-toggle-btn {
+button {
     border: none;
     padding: 0.5rem;
     border-radius: var(--pico-border-radius);
     transition: background-color 0.2s;
     background-color: #ffffff;
     color: var(--primary-600);
+}
+
+button:hover,
+button.active {
+    background-color: var(--primary-100);
+    color: var(--primary-700);
+}
+
+.menu-toggle-btn {
     display: flex;
     align-items: center;
     cursor: pointer;
@@ -37,17 +46,6 @@
 .profile-btn {
     gap: 0.5rem;
     border: none;
-    padding: 0.5rem 1rem;
-    border-radius: var(--pico-border-radius);
-    transition: background-color 0.2s;
-    background-color: #ffffff;
-    color: var(--primary-600);
-}
-
-.profile-btn:hover,
-.profile-btn.active {
-    background-color: var(--primary-100);
-    color: var(--primary-700);
 }
 
 .profile-avatar {
@@ -96,6 +94,12 @@
     border-radius: var(--pico-border-radius);
     transition: background-color 0.2s;
     font-size: 0.9rem;
+    color: var(--primary-900);
+}
+
+.sidebar-link:hover {
+    background-color: var(--primary-100);
+    color: var(--primary-700);
 }
 
 /* Profile Menu */
@@ -141,13 +145,8 @@
 }
 
 .logout-btn {
-    background: transparent;
-    border: none;
     text-align: left;
-    padding: 0.5rem;
-    cursor: pointer;
     width: 100%;
-    border-radius: var(--pico-border-radius);
     font-size: 0.9rem;
 }
 
