@@ -1,4 +1,6 @@
 import { Metadata } from 'next';
+import '@picocss/pico/css/pico.min.css';
+import './globals.css';
 
 export const metadata: Metadata = {
     title: {
@@ -13,7 +15,7 @@ export default function AdminLayout({
     children: React.ReactNode;
 }) {
     return (
-        <html>
+        <html data-theme='light'>
             <body>{children}</body>
         </html>
     );

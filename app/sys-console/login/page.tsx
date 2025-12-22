@@ -3,6 +3,7 @@ import { redirect } from 'next/navigation';
 import { auth } from '@/lib/auth';
 import { getMessages } from '@/lib/getMessages';
 import { Metadata } from 'next';
+import './line.css';
 
 export const metadata: Metadata = {
     title: '登入管理畫面',
@@ -28,52 +29,39 @@ export default async function LoginPage({
     };
 
     return (
-        <div
+        <main
+            className='container'
             style={{
                 display: 'flex',
                 flexDirection: 'column',
-                alignItems: 'center',
                 justifyContent: 'center',
-                height: '100vh',
-                fontFamily:
-                    '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif',
-                backgroundColor: '#f5f5f5',
+                minHeight: '100vh',
             }}
         >
-            <div
+            <article
                 style={{
-                    padding: '2.5rem',
-                    backgroundColor: 'white',
-                    borderRadius: '12px',
-                    boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1)',
-                    textAlign: 'center',
                     width: '100%',
-                    maxWidth: '360px',
+                    maxWidth: '400px',
+                    margin: '0 auto',
+                    textAlign: 'center',
                 }}
             >
-                <h1
-                    style={{
-                        marginBottom: '2rem',
-                        fontSize: '1.5rem',
-                        color: '#333',
-                        fontWeight: 600,
-                    }}
-                >
-                    {t('loginTitle')}
-                </h1>
+                <header style={{ borderBottom: 'none', paddingBottom: 0 }}>
+                    <hgroup style={{ marginBottom: '1rem' }}>
+                        <h2 style={{ marginBottom: 0 }}>{t('loginTitle')}</h2>
+                        <p
+                            style={{
+                                fontSize: '0.8em',
+                                color: 'var(--pico-muted-color)',
+                            }}
+                        >
+                            Rita's System Console
+                        </p>
+                    </hgroup>
+                </header>
 
                 {error && (
-                    <div
-                        style={{
-                            color: '#d32f2f',
-                            marginBottom: '1.5rem',
-                            padding: '0.75rem',
-                            background: '#ffebee',
-                            borderRadius: '6px',
-                            fontSize: '0.875rem',
-                            border: '1px solid #ffcdd2',
-                        }}
-                    >
+                    <div role='alert' className='alert error'>
                         {error === 'AccessDenied'
                             ? t('accessDenied')
                             : t('unknownError')}
@@ -85,47 +73,15 @@ export default async function LoginPage({
                         'use server';
                         await signIn('line', { redirectTo: '/sys-console' });
                     }}
+                    style={{ marginBottom: 0 }}
                 >
-                    <button
-                        type='submit'
-                        style={{
-                            display: 'flex',
-                            alignItems: 'center',
-                            justifyContent: 'center',
-                            width: '100%',
-                            backgroundColor: '#06C755',
-                            color: 'white',
-                            padding: '0',
-                            border: 'none',
-                            borderRadius: '8px',
-                            fontSize: '16px',
-                            cursor: 'pointer',
-                            fontWeight: 'bold',
-                            height: '50px',
-                            transition: 'background-color 0.2s',
-                        }}
-                    >
-                        <div
-                            style={{
-                                width: '50px',
-                                height: '100%',
-                                display: 'flex',
-                                alignItems: 'center',
-                                justifyContent: 'center',
-                                borderRight: '1px solid rgba(0,0,0,0.08)',
-                            }}
-                        >
+                    <button type='submit' className='btn-line'>
+                        <div className='icon-wrapper'>
                             <svg
-                                style={{ height: '100%', width: 'auto' }}
                                 viewBox='1066 586 428 428'
                                 fill='none'
                                 xmlns='http://www.w3.org/2000/svg'
                             >
-                                <path
-                                    d='m 0,0 h -175.719 c -39.843,0 -72.14,32.299 -72.14,72.141 v 175.718 c 0,39.842 32.297,72.141 72.14,72.141 H 0 c 39.843,0 72.141,-32.299 72.141,-72.141 V 72.141 C 72.141,32.299 39.843,0 0,0'
-                                    fill='#06c755'
-                                    transform='matrix(1.3333333,0,0,-1.3333333,1397.1459,1013.3363)'
-                                />
                                 <path
                                     d='m 0,0 c 0,47.74 -47.859,86.58 -106.688,86.58 -58.825,0 -106.689,-38.84 -106.689,-86.58 0,-42.798 37.955,-78.642 89.226,-85.417 3.473,-0.751 8.203,-2.292 9.398,-5.262 1.076,-2.696 0.704,-6.922 0.346,-9.646 0,0 -1.252,-7.529 -1.524,-9.134 -0.465,-2.695 -2.144,-10.549 9.243,-5.752 11.386,4.799 61.44,36.18 83.824,61.941 h -0.005 C -7.408,-36.313 0,-19.105 0,0'
                                     fill='#ffffff'
@@ -158,7 +114,7 @@ export default async function LoginPage({
                         </span>
                     </button>
                 </form>
-            </div>
-        </div>
+            </article>
+        </main>
     );
 }
