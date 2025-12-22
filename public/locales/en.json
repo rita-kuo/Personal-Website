@@ -2,5 +2,11 @@
     "common": {
         "title": "Hello",
         "description": "Welcome to the site"
+    },
+    "auth": {
+        "loginTitle": "System Console Login",
+        "loginButton": "Log in with LINE",
+        "accessDenied": "Access Denied: Your email is not authorized",
+        "unknownError": "An unknown error occurred. Please try again later."
     }
 }
