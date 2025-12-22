@@ -1,5 +1,13 @@
 import React from 'react';
 import { getMessages } from '../../lib/getMessages';
+import { Metadata } from 'next';
+
+export const metadata: Metadata = {
+    title: {
+        template: "%s - Rita's",
+        default: "Rita's Personal Website",
+    },
+};
 
 type Props = {
     params: { locale: string } | Promise<{ locale: string }>;
