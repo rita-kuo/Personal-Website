@@ -86,13 +86,15 @@ export default function Header({ user, t, onLogout }: Props) {
                     {/* Left: Hamburger Menu */}
                     <ul style={{ margin: 0 }}>
                         <li>
-                            <button 
-                                id="menu-toggle"
+                            <button
+                                id='menu-toggle'
                                 onClick={() => {
                                     if (isSidebarOpen) closeSidebar();
                                     else setIsSidebarOpen(true);
                                 }}
-                                className={`menu-toggle-btn ${isSidebarOpen ? 'active' : ''}`}
+                                className={`menu-toggle-btn ${
+                                    isSidebarOpen ? 'active' : ''
+                                }`}
                             >
                                 <svg
                                     xmlns='http://www.w3.org/2000/svg'
