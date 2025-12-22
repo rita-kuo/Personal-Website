@@ -13,40 +13,70 @@ enum ActionType {
 }
 
 model Game {
-  id        String   @id @default(cuid())
+  id        Int      @id @default(autoincrement())
   name      String
   slug      String   @unique
   levels    Level[]
   createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  updatedAt DateTime @default(now()) @updatedAt
 }
 
 model Level {
-  id         String        @id @default(cuid())
+  id         Int           @id @default(autoincrement())
   game       Game          @relation(fields: [gameId], references: [id])
-  gameId     String
+  gameId     Int
   name       String
   slug       String
   // ordering of levels within a game
   order      Int?
   details    LevelDetail[]
   createdAt  DateTime      @default(now())
-  updatedAt  DateTime      @updatedAt
+  updatedAt  DateTime      @default(now()) @updatedAt
 
   @@index([gameId])
   @@unique([gameId, slug])
 }
 
 model LevelDetail {
-  id         String     @id @default(cuid())
+  id         Int        @id @default(autoincrement())
   level      Level      @relation(fields: [levelId], references: [id])
-  levelId    String
+  levelId    Int
   actionType ActionType @default(NONE)
   content    String
   meta       Json?
   createdAt  DateTime   @default(now())
-  updatedAt  DateTime   @updatedAt
+  updatedAt  DateTime   @default(now()) @updatedAt
 
   @@index([levelId])
+}
+
+model User {
+  id            Int       @id @default(autoincrement())
+  name          String?
+  email         String?   @unique
+  emailVerified DateTime?
+  image         String?
+  accounts      Account[]
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @default(now()) @updatedAt
+}
+
+model Account {
+  id                 Int     @id @default(autoincrement())
+  userId             Int
+  type               String
+  provider           String
+  providerAccountId  String
+  refresh_token      String?  @db.Text
+  access_token       String?  @db.Text
+  expires_at         Int?
+  token_type         String?
+  scope              String?
+  id_token           String?  @db.Text
+  session_state      String?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
 }
 

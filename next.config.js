@@ -3,9 +3,6 @@ const nextConfig = {
     reactStrictMode: true,
     // using a dynamic `app/[locale]` route for locale handling
     // Do not enable Next.js built-in `i18n` here to avoid routing conflicts
-    experimental: {
-        appDir: true,
-    },
 };
 
-module.exports = nextConfig;
+export default nextConfig;
