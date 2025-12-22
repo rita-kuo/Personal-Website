@@ -8,5 +8,14 @@
         "loginButton": "使用 LINE 帳號登入",
         "accessDenied": "存取被拒：您的 Email 未被授權",
         "unknownError": "發生未知錯誤，請稍後再試"
+    },
+    "sys": {
+        "title": "管理平台",
+        "menu": {
+            "game": "遊戲管理"
+        },
+        "user": {
+            "logout": "登出"
+        }
     }
 }

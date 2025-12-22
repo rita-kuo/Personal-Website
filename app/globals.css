@@ -88,4 +88,44 @@
     border-color: #ef9a9a;
 }
 
+/* Utility Classes */
+.text-primary-900 {
+    color: var(--primary-900) !important;
+}
+
+.bg-white {
+    background-color: #ffffff !important;
+}
+
+.shadow-sm {
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.flex-center {
+    display: flex;
+    align-items: center;
+}
+
+.sticky-top {
+    position: sticky;
+    top: 0;
+    z-index: 100;
+}
+
+.cursor-pointer {
+    cursor: pointer;
+}
+
+.w-full {
+    width: 100%;
+}
+
+.no-decoration {
+    text-decoration: none;
+}
+
+button:focus {
+    box-shadow: none;
+}
+
 /* Add your custom CSS below */
