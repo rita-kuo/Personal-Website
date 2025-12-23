@@ -135,6 +135,7 @@
 .columnContent {
     flex: 1;
     overflow-y: auto;
+    overflow-x: hidden;
 }
 
 .list {
@@ -149,6 +150,9 @@
     cursor: pointer;
     transition: background-color 0.2s;
     border: 1px solid transparent;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
 }
 
 .listItem:hover {
@@ -159,6 +163,10 @@
     background-color: var(--primary-200);
     border-color: var(--primary-300);
     font-weight: bold;
+}
+
+.listItem:focus {
+    box-shadow: none;
 }
 
 .addButton {

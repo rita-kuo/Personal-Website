@@ -73,7 +73,10 @@
 }
 
 [type='submit']:is(:hover, :active, :focus),
-button:is(:hover, :active, :focus) {
+button:is(:hover, :active, :focus),
+[role='button']:is(:hover, :active, :focus) {
+    --pico-primary-hover-background: var(--primary-600);
+    --pico-primary-hover-border: var(--primary-600);
     --pico-background-color: var(--primary-700);
     --pico-border-color: var(--primary-700);
 }

@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
+import { arrayMove } from '@dnd-kit/sortable';
 import styles from '../game-editor.module.css';
 import LevelList from './LevelList';
 import LevelDetailList from './LevelDetailList';
@@ -116,6 +117,26 @@ export default function GameEditor({ t }: Props) {
         );
     };
 
+    const handleReorderLevels = (oldIndex: number, newIndex: number) => {
+        setLevels((items) => arrayMove(items, oldIndex, newIndex));
+    };
+
+    const handleReorderDetails = (oldIndex: number, newIndex: number) => {
+        if (!selectedLevelId) return;
+
+        setLevels((prevLevels) => {
+            return prevLevels.map((level) => {
+                if (level.id === selectedLevelId) {
+                    return {
+                        ...level,
+                        details: arrayMove(level.details, oldIndex, newIndex),
+                    };
+                }
+                return level;
+            });
+        });
+    };
+
     const handleSave = async () => {
         if (!name || !slug) return;
         setIsSaving(true);
@@ -189,9 +210,15 @@ export default function GameEditor({ t }: Props) {
                     selectedLevelId={selectedLevelId}
                     onSelect={(id) => {
                         setSelectedLevelId(id);
-                        setSelectedDetailId(null);
+                        const level = levels.find((l) => l.id === id);
+                        if (level && level.details.length > 0) {
+                            setSelectedDetailId(level.details[0].id);
+                        } else {
+                            setSelectedDetailId(null);
+                        }
                     }}
                     onAdd={openAddModal}
+                    onReorder={handleReorderLevels}
                     t={t}
                 />
                 <LevelDetailList
@@ -199,6 +226,7 @@ export default function GameEditor({ t }: Props) {
                     selectedDetailId={selectedDetailId}
                     onSelect={setSelectedDetailId}
                     onAdd={handleAddDetail}
+                    onReorder={handleReorderDetails}
                     t={t}
                 />
                 <DetailEditor
