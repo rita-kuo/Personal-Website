@@ -11,7 +11,9 @@
     justify-content: space-between;
 }
 
-button {
+.menu-toggle-btn,
+.profile-btn,
+.logout-btn {
     border: none;
     padding: 0.5rem;
     border-radius: var(--pico-border-radius);
@@ -20,8 +22,12 @@ button {
     color: var(--primary-600);
 }
 
-button:hover,
-button.active {
+.menu-toggle-btn:hover,
+.menu-toggle-btn.active,
+.profile-btn:hover,
+.profile-btn.active,
+.logout-btn:hover,
+.logout-btn.active {
     background-color: var(--primary-100);
     color: var(--primary-700);
 }
@@ -30,12 +36,6 @@ button.active {
     display: flex;
     align-items: center;
     cursor: pointer;
-}
-
-.menu-toggle-btn:hover,
-.menu-toggle-btn.active {
-    background-color: var(--primary-100);
-    color: var(--primary-700);
 }
 
 .header-title {

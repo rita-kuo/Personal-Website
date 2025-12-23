@@ -27,6 +27,44 @@
                 "name": "Name",
                 "updatedAt": "Last Updated"
             }
+        },
+        "games": {
+            "title": "Game Management",
+            "addGame": "Add Game",
+            "list": {
+                "name": "Game Name",
+                "updatedAt": "Last Updated"
+            },
+            "pagination": {
+                "prev": "Previous",
+                "next": "Next"
+            }
+        },
+        "gameEditor": {
+            "newTitle": "New Game",
+            "editTitle": "Edit Game",
+            "gameName": "Game Name",
+            "name": "Name",
+            "slug": "Slug",
+            "save": "Save Game",
+            "saving": "Saving...",
+            "levels": "Levels",
+            "addLevel": "Add Level",
+            "details": "Level Details",
+            "addDetail": "Add Detail",
+            "content": "Content",
+            "actionType": "Type",
+            "modal": {
+                "addLevelTitle": "Add Level",
+                "create": "Create",
+                "save": "Save",
+                "cancel": "Cancel"
+            },
+            "placeholders": {
+                "name": "Enter name",
+                "slug": "Enter slug",
+                "content": "Enter content..."
+            }
         }
     }
 }

@@ -30,16 +30,14 @@ export default async function AdminDashboard() {
         <>
             <hgroup className='dashboard-header'>
                 <h1>{t.title}</h1>
-                <p>
-                    {t.welcome.replace('{name}', session.user?.name || '')}
-                </p>
+                <p>{t.welcome.replace('{name}', session.user?.name || '')}</p>
             </hgroup>
-            
+
             <article className='dashboard-card'>
                 <header className='card-header'>
                     <h3 className='card-title'>{t.recentGames}</h3>
                     <Link
-                        href='/sys-console/game'
+                        href='/sys-console/games'
                         className='secondary outline view-all-btn'
                     >
                         {t.viewAll}
@@ -57,11 +55,13 @@ export default async function AdminDashboard() {
                                 </tr>
                             ) : (
                                 games.map((game) => (
-                                    <GameRow 
+                                    <GameRow
                                         key={game.id}
                                         id={game.id}
                                         name={game.name}
-                                        updatedAt={new Date(game.updatedAt).toLocaleDateString()}
+                                        updatedAt={new Date(
+                                            game.updatedAt
+                                        ).toLocaleDateString()}
                                     />
                                 ))
                             )}
