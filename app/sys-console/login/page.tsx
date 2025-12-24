@@ -44,6 +44,7 @@ export default async function LoginPage({
                     maxWidth: '400px',
                     margin: '0 auto',
                     textAlign: 'center',
+                    padding: '2rem',
                 }}
             >
                 <header style={{ borderBottom: 'none', paddingBottom: 0 }}>
@@ -79,7 +80,7 @@ export default async function LoginPage({
                         <div className='icon-wrapper'>
                             <i
                                 className='ri-line-fill'
-                                style={{ fontSize: '2rem', color: '#06c755' }}
+                                style={{ fontSize: '2rem', color: 'white' }}
                             ></i>
                         </div>
                         <span style={{ flex: 1, textAlign: 'center' }}>
