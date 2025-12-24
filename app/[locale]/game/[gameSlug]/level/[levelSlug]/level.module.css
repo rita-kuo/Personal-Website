@@ -95,7 +95,7 @@
 }
 
 .imageContent.visible {
-    max-height: 500px; /* Adjust based on expected image size */
+    max-height: max-content;
     opacity: 1;
     position: relative;
 }
