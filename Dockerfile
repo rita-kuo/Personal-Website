@@ -1,41 +1,27 @@
-# Multi-stage Dockerfile for Next.js + Prisma
-FROM node:20-alpine AS builder
+FROM node:20-alpine
+
+# Install OpenSSL for Prisma
+RUN apk add --no-cache openssl libc6-compat
+
 WORKDIR /app
 
-# Copy package files first for better caching
-COPY package.json package-lock.json* ./
+COPY package*.json ./
 
-# Install dependencies (falls back to npm install if package-lock.json missing)
-RUN npm ci --omit=dev || npm install
+RUN npm install --legacy-peer-deps
 
-# Copy rest of source
 COPY . .
 
-# Provide a harmless build-time DATABASE_URL to avoid Prisma errors during build
-ARG DATABASE_URL="file:dev.db"
-ENV DATABASE_URL=${DATABASE_URL}
-
-# Generate Prisma client (does not require DB connection)
 RUN npx prisma generate || true
 
-# Build Next.js app
-RUN npm run build
-
-FROM node:20-alpine AS runner
-WORKDIR /app
+# Set production environment
 ENV NODE_ENV=production
 
-# Copy built assets and node_modules
-COPY --from=builder /app/.next .next
-COPY --from=builder /app/node_modules ./node_modules
-COPY --from=builder /app/package.json ./package.json
-COPY --from=builder /app/public ./public
-COPY --from=builder /app/prisma ./prisma
-COPY --from=builder /app/.next/standalone .
+RUN npm run build
 
-# Copy entrypoint that will run migrations at container start
-COPY docker-entrypoint.sh ./docker-entrypoint.sh
-RUN chmod +x ./docker-entrypoint.sh
+# Copy entrypoint script
+COPY docker-entrypoint.sh /usr/local/bin/
+RUN chmod +x /usr/local/bin/docker-entrypoint.sh
 
 EXPOSE 3000
-CMD ["./docker-entrypoint.sh"]
+
+ENTRYPOINT ["docker-entrypoint.sh"]

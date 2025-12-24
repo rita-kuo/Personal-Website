@@ -20,7 +20,7 @@ jobs:
 
       - name: Build docker image
         id: build-docker
-        run: docker build --load -t "${{env.DOCKER_IMAGE}}:${{env.VERSION}}.${{env.TAG_VERSION}}" --build-arg DATABASE_URL="${{secrets.DATABASE_URL}}" .
+        run: docker build --load -t "${{env.DOCKER_IMAGE}}:${{env.VERSION}}.${{env.TAG_VERSION}}" .
 
       - name: Stop old container if exists
         run: |
