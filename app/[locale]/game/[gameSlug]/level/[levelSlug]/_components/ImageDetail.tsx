@@ -43,13 +43,13 @@ export default function ImageDetail({ content, name }: ImageDetailProps) {
                     isOpen ? styles.visible : ''
                 }`}
             >
-                {isOpen && (
-                    <img
-                        src={content}
-                        alt={name}
-                        className='animate__animated animate__slideInUp'
-                    />
-                )}
+                <img
+                    src={content}
+                    alt={name}
+                    className={
+                        isOpen ? 'animate__animated animate__slideInUp' : ''
+                    }
+                />
             </div>
         </div>
     );
