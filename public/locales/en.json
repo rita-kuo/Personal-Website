@@ -71,6 +71,9 @@
                 "name": "Enter name",
                 "slug": "Enter slug",
                 "content": "Enter content..."
+            },
+            "validation": {
+                "required": "This field is required"
             }
         }
     }

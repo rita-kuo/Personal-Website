@@ -71,6 +71,9 @@
                 "name": "請輸入名稱",
                 "slug": "請輸入 Slug",
                 "content": "請輸入內容..."
+            },
+            "validation": {
+                "required": "此欄位為必填"
             }
         }
     }

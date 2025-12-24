@@ -1,29 +1,33 @@
 'use client';
 
+import { useFormContext } from 'react-hook-form';
 import styles from '../game-editor.module.css';
 
-type LevelDetail = {
-    id: string;
-    name: string;
-    content: string;
-    actionType: string;
-};
-
 type Props = {
-    detail: LevelDetail | null;
-    onUpdate: (id: string, field: string, value: any) => void;
-    onDelete: () => void;
+    levelIndex: number;
+    detailIndex: number;
     t: any;
 };
 
-export default function DetailEditor({ detail, onUpdate, onDelete, t }: Props) {
-    if (!detail) {
+export default function DetailEditor({ levelIndex, detailIndex, t }: Props) {
+    const { register, getFieldState, formState } = useFormContext();
+
+    if (levelIndex === -1 || detailIndex === -1) {
         return (
             <div className={styles.column}>
                 <div className={styles.columnContent}></div>
             </div>
         );
     }
+
+    // Helper to get error message safely
+    const getError = (field: string) => {
+        const { error } = getFieldState(
+            `levels.${levelIndex}.details.${detailIndex}.${field}`,
+            formState
+        );
+        return error?.message;
+    };
 
     return (
         <div className={styles.column}>
@@ -33,24 +37,28 @@ export default function DetailEditor({ detail, onUpdate, onDelete, t }: Props) {
                         <label>{t.name}</label>
                         <input
                             type='text'
-                            value={detail.name || ''}
-                            onChange={(e) =>
-                                onUpdate(detail.id, 'name', e.target.value)
-                            }
+                            {...register(
+                                `levels.${levelIndex}.details.${detailIndex}.name`
+                            )}
                             placeholder={t.placeholders.name}
                         />
+                        {getError('name') && (
+                            <span
+                                style={{
+                                    color: 'var(--pico-del-color)',
+                                    fontSize: '0.8em',
+                                }}
+                            >
+                                {getError('name')}
+                            </span>
+                        )}
                     </div>
                     <div className={styles.editorField}>
                         <label>{t.actionType}</label>
                         <select
-                            value={detail.actionType}
-                            onChange={(e) =>
-                                onUpdate(
-                                    detail.id,
-                                    'actionType',
-                                    e.target.value
-                                )
-                            }
+                            {...register(
+                                `levels.${levelIndex}.details.${detailIndex}.actionType`
+                            )}
                         >
                             <option value='NONE'>NONE</option>
                             <option value='IMAGE'>IMAGE</option>
@@ -60,12 +68,21 @@ export default function DetailEditor({ detail, onUpdate, onDelete, t }: Props) {
                     <div className={styles.editorField} style={{ flex: 1 }}>
                         <label>{t.content}</label>
                         <textarea
-                            value={detail.content}
-                            onChange={(e) =>
-                                onUpdate(detail.id, 'content', e.target.value)
-                            }
+                            {...register(
+                                `levels.${levelIndex}.details.${detailIndex}.content`
+                            )}
                             placeholder={t.placeholders.content}
                         />
+                        {getError('content') && (
+                            <span
+                                style={{
+                                    color: 'var(--pico-del-color)',
+                                    fontSize: '0.8em',
+                                }}
+                            >
+                                {getError('content')}
+                            </span>
+                        )}
                     </div>
                 </div>
             </div>

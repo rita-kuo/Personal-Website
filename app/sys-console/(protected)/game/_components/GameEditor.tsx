@@ -3,6 +3,9 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { arrayMove } from '@dnd-kit/sortable';
+import { useForm, useFieldArray, FormProvider } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { z } from 'zod';
 import styles from '../game-editor.module.css';
 import LevelList from './LevelList';
 import LevelDetailList from './LevelDetailList';
@@ -11,7 +14,8 @@ import LevelHeaderEditor from './LevelHeaderEditor';
 import LevelModal from './LevelModal';
 import { createGame, updateGame, deleteGame } from '../actions';
 
-type LevelDetail = {
+// Define types for form values
+type DetailFormValues = {
     id: string;
     name: string;
     content: string;
@@ -19,11 +23,17 @@ type LevelDetail = {
     meta?: any;
 };
 
-type Level = {
+type LevelFormValues = {
     id: string;
     name: string;
     slug: string;
-    details: LevelDetail[];
+    details: DetailFormValues[];
+};
+
+type GameFormValues = {
+    name: string;
+    slug: string;
+    levels: LevelFormValues[];
 };
 
 type Props = {
@@ -38,15 +48,68 @@ type Props = {
 
 export default function GameEditor({ initialGame, t }: Props) {
     const router = useRouter();
-    const [name, setName] = useState(initialGame?.name || '');
-    const [slug, setSlug] = useState(initialGame?.slug || '');
-    const [levels, setLevels] = useState<Level[]>(
-        initialGame?.levels.map((l) => ({
-            ...l,
-            id: String(l.id),
-            details: l.details.map((d: any) => ({ ...d, id: String(d.id) })),
-        })) || []
-    );
+    const [isModalOpen, setIsModalOpen] = useState(false);
+    const [modalMode, setModalMode] = useState<'add' | 'edit'>('add');
+    const [isSaving, setIsSaving] = useState(false);
+    const [isDeleting, setIsDeleting] = useState(false);
+
+    // Create schema with i18n messages
+    const detailSchema = z.object({
+        id: z.string(),
+        name: z.string().min(1, t.validation.required),
+        content: z.string().min(1, t.validation.required),
+        actionType: z.string(),
+        meta: z.any().optional(),
+    });
+
+    const levelSchema = z.object({
+        id: z.string(),
+        name: z.string().min(1, t.validation.required),
+        slug: z.string().min(1, t.validation.required),
+        details: z.array(detailSchema),
+    });
+
+    const gameSchema = z.object({
+        name: z.string().min(1, t.validation.required),
+        slug: z.string().min(1, t.validation.required),
+        levels: z.array(levelSchema),
+    });
+
+    const form = useForm<GameFormValues>({
+        resolver: zodResolver(gameSchema),
+        defaultValues: {
+            name: initialGame?.name || '',
+            slug: initialGame?.slug || '',
+            levels:
+                initialGame?.levels?.map((l) => ({
+                    ...l,
+                    id: String(l.id),
+                    details: l.details.map((d: any) => ({
+                        ...d,
+                        id: String(d.id),
+                    })),
+                })) || [],
+        },
+    });
+
+    const {
+        control,
+        register,
+        handleSubmit,
+        watch,
+        setValue,
+        getValues,
+        formState: { errors },
+    } = form;
+
+    const { fields, append, remove, move, update } = useFieldArray({
+        control,
+        name: 'levels',
+        keyName: '_rhfId',
+    });
+
+    const levels = watch('levels');
+
     const [selectedLevelId, setSelectedLevelId] = useState<string | null>(
         levels.length > 0 ? levels[0].id : null
     );
@@ -55,30 +118,38 @@ export default function GameEditor({ initialGame, t }: Props) {
             ? levels[0].details[0].id
             : null
     );
-    const [isModalOpen, setIsModalOpen] = useState(false);
-    const [modalMode, setModalMode] = useState<'add' | 'edit'>('add');
-    const [isSaving, setIsSaving] = useState(false);
-    const [isDeleting, setIsDeleting] = useState(false);
+
+    const selectedLevelIndex = levels.findIndex(
+        (l) => l.id === selectedLevelId
+    );
+    const selectedLevel =
+        selectedLevelIndex !== -1 ? levels[selectedLevelIndex] : null;
+
+    const selectedDetailIndex = selectedLevel
+        ? selectedLevel.details.findIndex((d) => d.id === selectedDetailId)
+        : -1;
+    const selectedDetail =
+        selectedDetailIndex !== -1 && selectedLevel
+            ? selectedLevel.details[selectedDetailIndex]
+            : null;
 
     const handleModalConfirm = (levelName: string, levelSlug: string) => {
         if (modalMode === 'add') {
-            const newLevel: Level = {
+            const newLevel = {
                 id: `temp-${Date.now()}`,
                 name: levelName,
                 slug: levelSlug,
                 details: [],
             };
-            setLevels([...levels, newLevel]);
+            append(newLevel);
             setSelectedLevelId(newLevel.id);
             setSelectedDetailId(null);
-        } else if (modalMode === 'edit' && selectedLevelId) {
-            setLevels(
-                levels.map((l) =>
-                    l.id === selectedLevelId
-                        ? { ...l, name: levelName, slug: levelSlug }
-                        : l
-                )
-            );
+        } else if (modalMode === 'edit' && selectedLevelIndex !== -1) {
+            update(selectedLevelIndex, {
+                ...levels[selectedLevelIndex],
+                name: levelName,
+                slug: levelSlug,
+            });
         }
         setIsModalOpen(false);
     };
@@ -96,56 +167,42 @@ export default function GameEditor({ initialGame, t }: Props) {
     };
 
     const handleAddDetail = () => {
-        if (!selectedLevelId) return;
+        if (selectedLevelIndex === -1) return;
 
-        const newDetail: LevelDetail = {
+        const newDetail = {
             id: `temp-detail-${Date.now()}`,
             name: '',
             content: '',
             actionType: 'NONE',
         };
 
-        setLevels(
-            levels.map((l) => {
-                if (l.id === selectedLevelId) {
-                    return { ...l, details: [...l.details, newDetail] };
-                }
-                return l;
-            })
+        const currentDetails = getValues(
+            `levels.${selectedLevelIndex}.details`
         );
+        setValue(`levels.${selectedLevelIndex}.details`, [
+            ...currentDetails,
+            newDetail,
+        ]);
         setSelectedDetailId(newDetail.id);
     };
 
-    const handleUpdateDetail = (id: string, field: string, value: any) => {
-        if (!selectedLevelId) return;
-
-        setLevels(
-            levels.map((l) => {
-                if (l.id === selectedLevelId) {
-                    return {
-                        ...l,
-                        details: l.details.map((d) =>
-                            d.id === id ? { ...d, [field]: value } : d
-                        ),
-                    };
-                }
-                return l;
-            })
-        );
-    };
-
     const handleDeleteLevel = () => {
-        if (!selectedLevelId) return;
-        const levelToDelete = levels.find((l) => l.id === selectedLevelId);
-        if (!levelToDelete) return;
+        if (selectedLevelIndex === -1) return;
 
         if (
-            !confirm(t.confirmDeleteLevel.replace('{name}', levelToDelete.name))
+            !confirm(
+                t.confirmDeleteLevel.replace(
+                    '{name}',
+                    levels[selectedLevelIndex].name
+                )
+            )
         )
             return;
 
-        const newLevels = levels.filter((l) => l.id !== selectedLevelId);
-        setLevels(newLevels);
+        remove(selectedLevelIndex);
+
+        const newLevels = levels.filter((_, i) => i !== selectedLevelIndex);
+
         if (newLevels.length > 0) {
             setSelectedLevelId(newLevels[0].id);
             if (newLevels[0].details.length > 0) {
@@ -160,16 +217,10 @@ export default function GameEditor({ initialGame, t }: Props) {
     };
 
     const handleDeleteDetail = () => {
-        if (!selectedLevelId || !selectedDetailId) return;
+        if (selectedLevelIndex === -1 || selectedDetailIndex === -1) return;
 
-        const level = levels.find((l) => l.id === selectedLevelId);
-        if (!level) return;
-
-        const detailToDelete = level.details.find(
-            (d) => d.id === selectedDetailId
-        );
-        if (!detailToDelete) return;
-
+        const detailToDelete =
+            levels[selectedLevelIndex].details[selectedDetailIndex];
         if (
             !confirm(
                 t.confirmDeleteDetail.replace('{name}', detailToDelete.name)
@@ -177,57 +228,39 @@ export default function GameEditor({ initialGame, t }: Props) {
         )
             return;
 
-        setLevels(
-            levels.map((l) => {
-                if (l.id === selectedLevelId) {
-                    const newDetails = l.details.filter(
-                        (d) => d.id !== selectedDetailId
-                    );
-                    return { ...l, details: newDetails };
-                }
-                return l;
-            })
+        const currentDetails = getValues(
+            `levels.${selectedLevelIndex}.details`
         );
+        const newDetails = currentDetails.filter(
+            (_, i) => i !== selectedDetailIndex
+        );
+        setValue(`levels.${selectedLevelIndex}.details`, newDetails);
+
         setSelectedDetailId(null);
     };
 
     const handleReorderLevels = (oldIndex: number, newIndex: number) => {
-        setLevels((items) => arrayMove(items, oldIndex, newIndex));
+        move(oldIndex, newIndex);
     };
 
     const handleReorderDetails = (oldIndex: number, newIndex: number) => {
-        if (!selectedLevelId) return;
+        if (selectedLevelIndex === -1) return;
 
-        setLevels((prevLevels) => {
-            return prevLevels.map((level) => {
-                if (level.id === selectedLevelId) {
-                    return {
-                        ...level,
-                        details: arrayMove(level.details, oldIndex, newIndex),
-                    };
-                }
-                return level;
-            });
-        });
+        const currentDetails = getValues(
+            `levels.${selectedLevelIndex}.details`
+        );
+        const newDetails = arrayMove(currentDetails, oldIndex, newIndex);
+        setValue(`levels.${selectedLevelIndex}.details`, newDetails);
     };
 
-    const handleSave = async () => {
-        if (!name || !slug) return;
+    const onSubmit = async (data: GameFormValues) => {
         setIsSaving(true);
 
         let result;
         if (initialGame) {
-            result = await updateGame(initialGame.id, {
-                name,
-                slug,
-                levels,
-            });
+            result = await updateGame(initialGame.id, data);
         } else {
-            result = await createGame({
-                name,
-                slug,
-                levels,
-            });
+            result = await createGame(data);
         }
 
         if (result.success) {
@@ -241,7 +274,8 @@ export default function GameEditor({ initialGame, t }: Props) {
 
     const handleDeleteGame = async () => {
         if (!initialGame) return;
-        if (!confirm(t.confirmDeleteGame.replace('{name}', name))) return;
+        if (!confirm(t.confirmDeleteGame.replace('{name}', getValues('name'))))
+            return;
         setIsDeleting(true);
 
         const result = await deleteGame(initialGame.id);
@@ -254,134 +288,153 @@ export default function GameEditor({ initialGame, t }: Props) {
         }
     };
 
-    const selectedLevel = levels.find((l) => l.id === selectedLevelId) || null;
-    const selectedDetail =
-        selectedLevel?.details.find((d) => d.id === selectedDetailId) || null;
-
     return (
-        <div className={styles.container}>
-            <div className={styles.header}>
-                <div className={styles.headerField}>
-                    <label>{t.gameName}</label>
-                    <input
-                        type='text'
-                        value={name}
-                        onChange={(e) => setName(e.target.value)}
-                        placeholder={t.placeholders.name}
-                    />
-                </div>
-                <div className={styles.headerField}>
-                    <label>{t.slug}</label>
-                    <input
-                        type='text'
-                        value={slug}
-                        onChange={(e) => setSlug(e.target.value)}
-                        placeholder={t.placeholders.slug}
-                    />
-                </div>
-                <button
-                    className={styles.saveButton}
-                    onClick={handleSave}
-                    disabled={isSaving || !name || !slug}
-                >
-                    {isSaving ? t.saving : t.save}
-                </button>
-                {initialGame && (
+        <FormProvider {...form}>
+            <div className={styles.container}>
+                <div className={styles.header}>
+                    <div className={styles.headerField}>
+                        <label>{t.gameName}</label>
+                        <input
+                            type='text'
+                            {...register('name')}
+                            placeholder={t.placeholders.name}
+                        />
+                        {errors.name && (
+                            <span
+                                style={{
+                                    color: 'var(--pico-del-color)',
+                                    fontSize: '0.8em',
+                                }}
+                            >
+                                {errors.name.message}
+                            </span>
+                        )}
+                    </div>
+                    <div className={styles.headerField}>
+                        <label>{t.slug}</label>
+                        <input
+                            type='text'
+                            {...register('slug')}
+                            placeholder={t.placeholders.slug}
+                        />
+                        {errors.slug && (
+                            <span
+                                style={{
+                                    color: 'var(--pico-del-color)',
+                                    fontSize: '0.8em',
+                                }}
+                            >
+                                {errors.slug.message}
+                            </span>
+                        )}
+                    </div>
                     <button
-                        className={`${styles.saveButton} outline secondary`}
-                        onClick={handleDeleteGame}
-                        disabled={isDeleting}
+                        className={styles.saveButton}
+                        onClick={handleSubmit(onSubmit)}
+                        disabled={isSaving}
                     >
-                        {isDeleting ? t.deleting : t.delete}
+                        {isSaving ? t.saving : t.save}
                     </button>
-                )}
-            </div>
-
-            <article className={styles.workspace}>
-                <div className={styles.headerCell}>
-                    <h2>{t.levels}</h2>
-                </div>
-                <div className={styles.headerCell}>
-                    <LevelHeaderEditor
-                        level={selectedLevel}
-                        onEdit={openEditModal}
-                        onDelete={handleDeleteLevel}
-                        t={t}
-                    />
-                </div>
-                <div className={`${styles.headerCell} ${styles.contentHeader}`}>
-                    <h2>{t.content}</h2>
-                    {selectedDetailId && (
+                    {initialGame && (
                         <button
-                            className='outline secondary'
-                            onClick={handleDeleteDetail}
-                            style={{
-                                padding: '0.25rem 0.5rem',
-                                fontSize: '0.8rem',
-                                width: 'auto',
-                            }}
+                            className={`${styles.saveButton} outline secondary`}
+                            onClick={handleDeleteGame}
+                            disabled={isDeleting}
                         >
-                            <i className='ri-delete-bin-line'></i> {t.delete}
+                            {isDeleting ? t.deleting : t.delete}
                         </button>
                     )}
                 </div>
 
-                <LevelList
-                    levels={levels}
-                    selectedLevelId={selectedLevelId}
-                    onSelect={(id) => {
-                        setSelectedLevelId(id);
-                        const level = levels.find((l) => l.id === id);
-                        if (level && level.details.length > 0) {
-                            setSelectedDetailId(level.details[0].id);
-                        } else {
-                            setSelectedDetailId(null);
-                        }
-                    }}
-                    onAdd={openAddModal}
-                    onReorder={handleReorderLevels}
-                    t={t}
-                />
-                <LevelDetailList
-                    level={selectedLevel}
-                    selectedDetailId={selectedDetailId}
-                    onSelect={setSelectedDetailId}
-                    onAdd={handleAddDetail}
-                    onReorder={handleReorderDetails}
-                    t={t}
-                />
-                <DetailEditor
-                    detail={selectedDetail}
-                    onUpdate={handleUpdateDetail}
-                    onDelete={handleDeleteDetail}
-                    t={t}
-                />
-            </article>
+                <article className={styles.workspace}>
+                    <div className={styles.headerCell}>
+                        <h2>{t.levels}</h2>
+                    </div>
+                    <div className={styles.headerCell}>
+                        <LevelHeaderEditor
+                            level={selectedLevel}
+                            onEdit={openEditModal}
+                            onDelete={handleDeleteLevel}
+                            t={t}
+                        />
+                    </div>
+                    <div
+                        className={`${styles.headerCell} ${styles.contentHeader}`}
+                    >
+                        <h2>{t.content}</h2>
+                        {selectedDetailId && (
+                            <button
+                                className='outline secondary'
+                                onClick={handleDeleteDetail}
+                                style={{
+                                    padding: '0.25rem 0.5rem',
+                                    fontSize: '0.8rem',
+                                    width: 'auto',
+                                }}
+                            >
+                                <i className='ri-delete-bin-line'></i>{' '}
+                                {t.delete}
+                            </button>
+                        )}
+                    </div>
 
-            <LevelModal
-                isOpen={isModalOpen}
-                onClose={() => setIsModalOpen(false)}
-                onConfirm={handleModalConfirm}
-                initialName={
-                    modalMode === 'edit' && selectedLevel
-                        ? selectedLevel.name
-                        : ''
-                }
-                initialSlug={
-                    modalMode === 'edit' && selectedLevel
-                        ? selectedLevel.slug
-                        : ''
-                }
-                title={
-                    modalMode === 'add'
-                        ? t.modal.addLevelTitle
-                        : t.modal.editLevelTitle || 'Edit Level'
-                }
-                confirmLabel={
-                    modalMode === 'edit' ? t.modal.save : t.modal.create
-                }
-                t={t}
-            />
-        </div>
+                    <LevelList
+                        levels={levels}
+                        selectedLevelId={selectedLevelId}
+                        onSelect={(id) => {
+                            setSelectedLevelId(id);
+                            const level = levels.find((l) => l.id === id);
+                            if (level && level.details.length > 0) {
+                                setSelectedDetailId(level.details[0].id);
+                            } else {
+                                setSelectedDetailId(null);
+                            }
+                        }}
+                        onAdd={openAddModal}
+                        onReorder={handleReorderLevels}
+                        t={t}
+                    />
+                    <LevelDetailList
+                        level={selectedLevel}
+                        selectedDetailId={selectedDetailId}
+                        onSelect={setSelectedDetailId}
+                        onAdd={handleAddDetail}
+                        onReorder={handleReorderDetails}
+                        t={t}
+                    />
+                    <DetailEditor
+                        key={selectedDetailId || 'none'}
+                        levelIndex={selectedLevelIndex}
+                        detailIndex={selectedDetailIndex}
+                        t={t}
+                    />
+                </article>
+
+                <LevelModal
+                    isOpen={isModalOpen}
+                    onClose={() => setIsModalOpen(false)}
+                    onConfirm={handleModalConfirm}
+                    initialName={
+                        modalMode === 'edit' && selectedLevel
+                            ? selectedLevel.name
+                            : ''
+                    }
+                    initialSlug={
+                        modalMode === 'edit' && selectedLevel
+                            ? selectedLevel.slug
+                            : ''
+                    }
+                    title={
+                        modalMode === 'add'
+                            ? t.modal.addLevelTitle
+                            : t.modal.editLevelTitle || 'Edit Level'
+                    }
+                    confirmLabel={
+                        modalMode === 'edit' ? t.modal.save : t.modal.create
+                    }
+                    t={t}
+                />
+            </div>
+        </FormProvider>
     );
 }
