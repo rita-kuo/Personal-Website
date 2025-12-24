@@ -44,9 +44,10 @@ type Props = {
         levels: any[];
     };
     t: any;
+    locale: string;
 };
 
-export default function GameEditor({ initialGame, t }: Props) {
+export default function GameEditor({ initialGame, t, locale }: Props) {
     const router = useRouter();
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [modalMode, setModalMode] = useState<'add' | 'edit'>('add');
@@ -353,9 +354,11 @@ export default function GameEditor({ initialGame, t }: Props) {
                     <div className={styles.headerCell}>
                         <LevelHeaderEditor
                             level={selectedLevel}
+                            gameSlug={watch('slug')}
                             onEdit={openEditModal}
                             onDelete={handleDeleteLevel}
                             t={t}
+                            locale={locale}
                         />
                     </div>
                     <div

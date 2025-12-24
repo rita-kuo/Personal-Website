@@ -29,7 +29,7 @@ export default async function NewGamePage() {
     return (
         <>
             <h1 style={{ marginBottom: '1rem' }}>{t.newTitle}</h1>
-            <GameEditor t={t} />
+            <GameEditor t={t} locale={locale} />
         </>
     );
 }

@@ -49,5 +49,5 @@ export default async function GameEditPage({
     const { messages } = await getMessages(locale, 'sys');
     const t = (messages as any).gameEditor;
 
-    return <GameEditor initialGame={game} t={t} />;
+    return <GameEditor initialGame={game} t={t} locale={locale} />;
 }
