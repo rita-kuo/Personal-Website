@@ -2,6 +2,7 @@
 
 import { useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
+import styles from '../game-editor.module.css';
 
 type Props = {
     id: string;
@@ -26,23 +27,10 @@ export default function SortableItem({
 
     return (
         <div ref={setNodeRef} style={style} className={className}>
-            <div
-                {...attributes}
-                {...listeners}
-                style={{
-                    cursor: 'grab',
-                    display: 'flex',
-                    alignItems: 'center',
-                    color: 'var(--pico-muted-color)',
-                    padding: '0.25rem',
-                    backgroundColor: 'transparent',
-                    border: 'none',
-                    boxShadow: 'none',
-                }}
-            >
+            <div {...attributes} {...listeners} className={styles.dragHandle}>
                 <i className='ri-menu-line'></i>
             </div>
-            <div onClick={onClick} style={{ flex: 1, minWidth: 0 }}>
+            <div onClick={onClick} className={styles.sortableContent}>
                 {children}
             </div>
         </div>

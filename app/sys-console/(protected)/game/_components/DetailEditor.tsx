@@ -12,10 +12,11 @@ type LevelDetail = {
 type Props = {
     detail: LevelDetail | null;
     onUpdate: (id: string, field: string, value: any) => void;
+    onDelete: () => void;
     t: any;
 };
 
-export default function DetailEditor({ detail, onUpdate, t }: Props) {
+export default function DetailEditor({ detail, onUpdate, onDelete, t }: Props) {
     if (!detail) {
         return (
             <div className={styles.column}>

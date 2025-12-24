@@ -11,10 +11,16 @@ type Level = {
 type Props = {
     level: Level | null;
     onEdit: () => void;
+    onDelete: () => void;
     t: any;
 };
 
-export default function LevelHeaderEditor({ level, onEdit, t }: Props) {
+export default function LevelHeaderEditor({
+    level,
+    onEdit,
+    onDelete,
+    t,
+}: Props) {
     if (!level) {
         return <h2>{t.details}</h2>;
     }
@@ -26,6 +32,13 @@ export default function LevelHeaderEditor({ level, onEdit, t }: Props) {
                     <h2>{level.name}</h2>
                     <i className='ri-pencil-line'></i>
                 </div>
+                <button
+                    className={`${styles.iconBtn} ${styles.right}`}
+                    onClick={onDelete}
+                    title={t.deleteLevel}
+                >
+                    <i className='ri-delete-bin-line'></i>
+                </button>
             </div>
         </div>
     );

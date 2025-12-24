@@ -54,8 +54,15 @@
             "addDetail": "Add Detail",
             "content": "Content",
             "actionType": "Type",
+            "delete": "Delete",
+            "deleting": "Deleting...",
+            "deleteLevel": "Delete Level",
+            "confirmDeleteGame": "Are you sure you want to delete this game?",
+            "confirmDeleteLevel": "Are you sure you want to delete this level?",
+            "confirmDeleteDetail": "Are you sure you want to delete this detail?",
             "modal": {
                 "addLevelTitle": "Add Level",
+                "editLevelTitle": "Edit Level",
                 "create": "Create",
                 "save": "Save",
                 "cancel": "Cancel"

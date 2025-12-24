@@ -9,7 +9,7 @@ import LevelDetailList from './LevelDetailList';
 import DetailEditor from './DetailEditor';
 import LevelHeaderEditor from './LevelHeaderEditor';
 import LevelModal from './LevelModal';
-import { createGame } from '../actions';
+import { createGame, updateGame, deleteGame } from '../actions';
 
 type LevelDetail = {
     id: string;
@@ -27,21 +27,38 @@ type Level = {
 };
 
 type Props = {
+    initialGame?: {
+        id: number;
+        name: string;
+        slug: string;
+        levels: any[];
+    };
     t: any;
 };
 
-export default function GameEditor({ t }: Props) {
+export default function GameEditor({ initialGame, t }: Props) {
     const router = useRouter();
-    const [name, setName] = useState('');
-    const [slug, setSlug] = useState('');
-    const [levels, setLevels] = useState<Level[]>([]);
-    const [selectedLevelId, setSelectedLevelId] = useState<string | null>(null);
+    const [name, setName] = useState(initialGame?.name || '');
+    const [slug, setSlug] = useState(initialGame?.slug || '');
+    const [levels, setLevels] = useState<Level[]>(
+        initialGame?.levels.map((l) => ({
+            ...l,
+            id: String(l.id),
+            details: l.details.map((d: any) => ({ ...d, id: String(d.id) })),
+        })) || []
+    );
+    const [selectedLevelId, setSelectedLevelId] = useState<string | null>(
+        levels.length > 0 ? levels[0].id : null
+    );
     const [selectedDetailId, setSelectedDetailId] = useState<string | null>(
-        null
+        levels.length > 0 && levels[0].details.length > 0
+            ? levels[0].details[0].id
+            : null
     );
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [modalMode, setModalMode] = useState<'add' | 'edit'>('add');
     const [isSaving, setIsSaving] = useState(false);
+    const [isDeleting, setIsDeleting] = useState(false);
 
     const handleModalConfirm = (levelName: string, levelSlug: string) => {
         if (modalMode === 'add') {
@@ -117,6 +134,43 @@ export default function GameEditor({ t }: Props) {
         );
     };
 
+    const handleDeleteLevel = () => {
+        if (!selectedLevelId) return;
+        if (!confirm(t.confirmDeleteLevel)) return;
+
+        const newLevels = levels.filter((l) => l.id !== selectedLevelId);
+        setLevels(newLevels);
+        if (newLevels.length > 0) {
+            setSelectedLevelId(newLevels[0].id);
+            if (newLevels[0].details.length > 0) {
+                setSelectedDetailId(newLevels[0].details[0].id);
+            } else {
+                setSelectedDetailId(null);
+            }
+        } else {
+            setSelectedLevelId(null);
+            setSelectedDetailId(null);
+        }
+    };
+
+    const handleDeleteDetail = () => {
+        if (!selectedLevelId || !selectedDetailId) return;
+        if (!confirm(t.confirmDeleteDetail)) return;
+
+        setLevels(
+            levels.map((l) => {
+                if (l.id === selectedLevelId) {
+                    const newDetails = l.details.filter(
+                        (d) => d.id !== selectedDetailId
+                    );
+                    return { ...l, details: newDetails };
+                }
+                return l;
+            })
+        );
+        setSelectedDetailId(null);
+    };
+
     const handleReorderLevels = (oldIndex: number, newIndex: number) => {
         setLevels((items) => arrayMove(items, oldIndex, newIndex));
     };
@@ -141,17 +195,42 @@ export default function GameEditor({ t }: Props) {
         if (!name || !slug) return;
         setIsSaving(true);
 
-        const result = await createGame({
-            name,
-            slug,
-            levels,
-        });
+        let result;
+        if (initialGame) {
+            result = await updateGame(initialGame.id, {
+                name,
+                slug,
+                levels,
+            });
+        } else {
+            result = await createGame({
+                name,
+                slug,
+                levels,
+            });
+        }
 
         if (result.success) {
-            router.push(`/sys-console/games/${result.id}`);
+            router.push('/sys-console/games');
+            router.refresh();
         } else {
             alert('Failed to save game');
             setIsSaving(false);
+        }
+    };
+
+    const handleDeleteGame = async () => {
+        if (!initialGame) return;
+        if (!confirm(t.confirmDeleteGame)) return;
+        setIsDeleting(true);
+
+        const result = await deleteGame(initialGame.id);
+
+        if (result.success) {
+            router.push('/sys-console/games');
+        } else {
+            alert('Failed to delete game');
+            setIsDeleting(false);
         }
     };
 
@@ -187,6 +266,15 @@ export default function GameEditor({ t }: Props) {
                 >
                     {isSaving ? t.saving : t.save}
                 </button>
+                {initialGame && (
+                    <button
+                        className={`${styles.saveButton} outline secondary`}
+                        onClick={handleDeleteGame}
+                        disabled={isDeleting}
+                    >
+                        {isDeleting ? t.deleting : t.delete}
+                    </button>
+                )}
             </div>
 
             <article className={styles.workspace}>
@@ -197,11 +285,25 @@ export default function GameEditor({ t }: Props) {
                     <LevelHeaderEditor
                         level={selectedLevel}
                         onEdit={openEditModal}
+                        onDelete={handleDeleteLevel}
                         t={t}
                     />
                 </div>
-                <div className={styles.headerCell}>
+                <div className={`${styles.headerCell} ${styles.contentHeader}`}>
                     <h2>{t.content}</h2>
+                    {selectedDetailId && (
+                        <button
+                            className='outline secondary'
+                            onClick={handleDeleteDetail}
+                            style={{
+                                padding: '0.25rem 0.5rem',
+                                fontSize: '0.8rem',
+                                width: 'auto',
+                            }}
+                        >
+                            <i className='ri-delete-bin-line'></i> {t.delete}
+                        </button>
+                    )}
                 </div>
 
                 <LevelList
@@ -231,6 +333,7 @@ export default function GameEditor({ t }: Props) {
                 <DetailEditor
                     detail={selectedDetail}
                     onUpdate={handleUpdateDetail}
+                    onDelete={handleDeleteDetail}
                     t={t}
                 />
             </article>

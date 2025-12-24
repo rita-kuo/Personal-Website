@@ -17,7 +17,7 @@ export default function GameListItem({
 }: Props) {
     return (
         <Link
-            href={`/sys-console/game/${id}`}
+            href={`/sys-console/games/${id}`}
             className={`${styles.item} animate__animated animate__fadeIn`}
         >
             <div className={styles.itemContent}>

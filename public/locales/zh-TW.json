@@ -54,8 +54,15 @@
             "addDetail": "新增內容",
             "content": "內容",
             "actionType": "類型",
+            "delete": "刪除",
+            "deleting": "刪除中...",
+            "deleteLevel": "刪除關卡",
+            "confirmDeleteGame": "確定要刪除此遊戲嗎？",
+            "confirmDeleteLevel": "確定要刪除此關卡嗎？",
+            "confirmDeleteDetail": "確定要刪除此內容嗎？",
             "modal": {
                 "addLevelTitle": "新增關卡",
+                "editLevelTitle": "編輯關卡",
                 "create": "新增",
                 "save": "儲存",
                 "cancel": "取消"
