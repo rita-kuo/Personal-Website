@@ -1,5 +1,5 @@
 # Multi-stage Dockerfile for Next.js + Prisma
-FROM node:20.17.6-alpine AS builder
+FROM node:20-alpine AS builder
 WORKDIR /app
 
 # Copy package files first for better caching
@@ -21,7 +21,7 @@ RUN npx prisma generate || true
 # Build Next.js app
 RUN npm run build
 
-FROM node:20.17.6-alpine AS runner
+FROM node:20-alpine AS runner
 WORKDIR /app
 ENV NODE_ENV=production
 
