@@ -89,7 +89,7 @@ export default function LevelList({
                         </div>
                     </SortableContext>
                 </DndContext>
-                <div className={styles.list} style={{ marginTop: '0.25rem' }}>
+                <div className={`${styles.list} ${styles.listWithMargin}`}>
                     <button
                         className={`outline ${styles.addButton}`}
                         onClick={onAdd}

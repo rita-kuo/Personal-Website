@@ -57,9 +57,9 @@
             "delete": "Delete",
             "deleting": "Deleting...",
             "deleteLevel": "Delete Level",
-            "confirmDeleteGame": "Are you sure you want to delete this game?",
-            "confirmDeleteLevel": "Are you sure you want to delete this level?",
-            "confirmDeleteDetail": "Are you sure you want to delete this detail?",
+            "confirmDeleteGame": "Are you sure you want to delete game \"{name}\"?",
+            "confirmDeleteLevel": "Are you sure you want to delete level \"{name}\"?",
+            "confirmDeleteDetail": "Are you sure you want to delete detail \"{name}\"?",
             "modal": {
                 "addLevelTitle": "Add Level",
                 "editLevelTitle": "Edit Level",

@@ -136,7 +136,13 @@ export default function GameEditor({ initialGame, t }: Props) {
 
     const handleDeleteLevel = () => {
         if (!selectedLevelId) return;
-        if (!confirm(t.confirmDeleteLevel)) return;
+        const levelToDelete = levels.find((l) => l.id === selectedLevelId);
+        if (!levelToDelete) return;
+
+        if (
+            !confirm(t.confirmDeleteLevel.replace('{name}', levelToDelete.name))
+        )
+            return;
 
         const newLevels = levels.filter((l) => l.id !== selectedLevelId);
         setLevels(newLevels);
@@ -155,7 +161,21 @@ export default function GameEditor({ initialGame, t }: Props) {
 
     const handleDeleteDetail = () => {
         if (!selectedLevelId || !selectedDetailId) return;
-        if (!confirm(t.confirmDeleteDetail)) return;
+
+        const level = levels.find((l) => l.id === selectedLevelId);
+        if (!level) return;
+
+        const detailToDelete = level.details.find(
+            (d) => d.id === selectedDetailId
+        );
+        if (!detailToDelete) return;
+
+        if (
+            !confirm(
+                t.confirmDeleteDetail.replace('{name}', detailToDelete.name)
+            )
+        )
+            return;
 
         setLevels(
             levels.map((l) => {
@@ -221,7 +241,7 @@ export default function GameEditor({ initialGame, t }: Props) {
 
     const handleDeleteGame = async () => {
         if (!initialGame) return;
-        if (!confirm(t.confirmDeleteGame)) return;
+        if (!confirm(t.confirmDeleteGame.replace('{name}', name))) return;
         setIsDeleting(true);
 
         const result = await deleteGame(initialGame.id);
