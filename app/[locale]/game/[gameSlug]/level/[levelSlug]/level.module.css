@@ -4,13 +4,15 @@
     align-items: center;
     gap: 2rem;
     padding: 2rem 0;
+    background-color: var(--primary-500);
+    min-height: 100vh;
 }
 
 /* Envelope Styles */
 .envelopeContainer {
     position: relative;
-    width: 300px;
-    height: 200px;
+    width: 90vw;
+    aspect-ratio: 3 / 2;
     perspective: 1000px;
     margin: 2rem auto;
 }
@@ -36,30 +38,50 @@
     pointer-events: none;
 }
 
-.waxSeal {
-    width: 50px;
-    height: 50px;
-    background-color: #d32f2f;
-    border-radius: 50%;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    cursor: pointer;
-    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
-    z-index: 20;
-    border: 2px solid #b71c1c;
+.outerWax {
+    width: 55px;
+    height: 55px;
+    border-radius: 50%; /* 變成圓形 */
+
+    /* 放射狀漸層：中心深酒紅 (#800020)，外圍淺酒紅 (#A52A2A) */
+    background: radial-gradient(circle, #600020 60%, #d45d5d 70%);
+
+    /* 增加一點立體感（選配） */
+    box-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+
+    position: relative;
 }
 
-.waxSeal i {
-    color: #ffcdd2;
+.innerWax {
+    width: 45px;
+    height: 45px;
+
+    position: absolute;
+    top: 5px;
+    left: 5px;
+
+    border-radius: 50%; /* 變成圓形 */
+
+    background-color: #800020; /* 深酒紅色 */
+}
+
+.outerWax i {
+    color: #d45d5d; /* Dark Wine Red Icon */
     font-size: 1.5rem;
+
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+
+    filter: drop-shadow(2px 2px 2px rgba(0, 0, 0, 0.4));
 }
 
 .imageContent {
     position: absolute;
     top: 0;
     left: 0;
-    width: 100%;
+    width: 90vw;
     height: auto;
     max-height: 0;
     overflow: hidden;
@@ -93,7 +115,6 @@
     padding: 2rem;
     border: 1px solid var(--primary-200);
     border-radius: 10px;
-    background-color: var(--background-color);
     user-select: none;
     -webkit-user-select: none;
 }

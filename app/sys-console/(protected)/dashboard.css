@@ -2,15 +2,6 @@
     margin-bottom: 1rem;
 }
 
-.dashboard-card {
-    padding: 0;
-    background-color: #ffffff;
-    border-radius: var(--pico-border-radius);
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-    border: 1px solid var(--pico-muted-border-color);
-    overflow: hidden;
-}
-
 .card-header {
     display: flex;
     justify-content: space-between;

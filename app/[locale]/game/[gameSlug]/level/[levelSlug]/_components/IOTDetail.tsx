@@ -44,8 +44,7 @@ export default function IOTDetail({ detailId, name }: IOTDetailProps) {
     };
 
     return (
-        <div className={styles.iotContainer}>
-            <h3 className={styles.iotName}>{name}</h3>
+        <article className={styles.iotContainer}>
             <div
                 className={`${styles.fingerprintSensor} ${styles[status]}`}
                 onMouseDown={startPress}
@@ -84,6 +83,6 @@ export default function IOTDetail({ detailId, name }: IOTDetailProps) {
             >
                 {t('accessGranted')}
             </div>
-        </div>
+        </article>
     );
 }

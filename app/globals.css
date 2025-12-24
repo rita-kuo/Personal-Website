@@ -107,6 +107,7 @@ h6 {
 
 body {
     font-size: medium;
+    margin: 0;
 }
 
 /* Utility class for Secondary Color buttons */
@@ -176,4 +177,11 @@ button:focus {
     box-shadow: none;
 }
 
-/* Add your custom CSS below */
+article {
+    padding: 0;
+    background-color: #ffffff;
+    border-radius: var(--pico-border-radius);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    border: 1px solid var(--pico-muted-border-color);
+    overflow: hidden;
+}

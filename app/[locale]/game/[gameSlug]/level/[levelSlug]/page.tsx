@@ -63,9 +63,6 @@ export default async function LevelPage({ params }: PageProps) {
 
     return (
         <main className='container'>
-            <hgroup>
-                <h1>{level.name}</h1>
-            </hgroup>
             <LevelDetailList details={level.details} />
         </main>
     );

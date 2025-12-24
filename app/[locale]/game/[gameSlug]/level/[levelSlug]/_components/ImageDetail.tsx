@@ -19,19 +19,20 @@ export default function ImageDetail({ content, name }: ImageDetailProps) {
     };
 
     return (
-        <div className={styles.container}>
+        <div className={styles.imageDetailContainer}>
             {!isOpen && (
                 <div
                     className={`${styles.envelopeContainer} animate__animated animate__fadeIn`}
                 >
                     <div className={styles.envelope}>
                         <div
-                            className={styles.waxSeal}
-                            onClick={handleOpen}
+                            className={styles.outerWax}
                             role='button'
+                            onClick={handleOpen}
                             aria-label={t('openEnvelope')}
                         >
-                            <i className='ri-mail-open-line'></i>
+                            <div className={styles.innerWax} />
+                            <i className='ri-bear-smile-line'></i>
                         </div>
                     </div>
                 </div>
