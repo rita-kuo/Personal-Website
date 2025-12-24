@@ -148,8 +148,7 @@ export default function GameEditor({ t }: Props) {
         });
 
         if (result.success) {
-            router.push('/sys-console/games');
-            router.refresh();
+            router.push(`/sys-console/games/${result.id}`);
         } else {
             alert('Failed to save game');
             setIsSaving(false);

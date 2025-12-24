@@ -25,11 +25,7 @@ export default function SortableItem({
     };
 
     return (
-        <div
-            ref={setNodeRef}
-            style={style}
-            className={className}
-        >
+        <div ref={setNodeRef} style={style} className={className}>
             <div
                 {...attributes}
                 {...listeners}
@@ -46,10 +42,7 @@ export default function SortableItem({
             >
                 <i className='ri-menu-line'></i>
             </div>
-            <div
-                onClick={onClick}
-                style={{ flex: 1, minWidth: 0 }}
-            >
+            <div onClick={onClick} style={{ flex: 1, minWidth: 0 }}>
                 {children}
             </div>
         </div>

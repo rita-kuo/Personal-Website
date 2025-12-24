@@ -192,7 +192,7 @@ export default function Header({ user, t, onLogout }: Props) {
                             <ul>
                                 <li>
                                     <Link
-                                        href='/sys-console/game'
+                                        href='/sys-console/games'
                                         onClick={closeSidebar}
                                         className='secondary sidebar-link no-decoration'
                                     >
