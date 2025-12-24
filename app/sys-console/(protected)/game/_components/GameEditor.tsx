@@ -173,7 +173,7 @@ export default function GameEditor({ initialGame, t }: Props) {
             id: `temp-detail-${Date.now()}`,
             name: '',
             content: '',
-            actionType: 'NONE',
+            actionType: 'IMAGE',
         };
 
         const currentDetails = getValues(
@@ -265,7 +265,6 @@ export default function GameEditor({ initialGame, t }: Props) {
 
         if (result.success) {
             router.push('/sys-console/games');
-            router.refresh();
         } else {
             alert('Failed to save game');
             setIsSaving(false);

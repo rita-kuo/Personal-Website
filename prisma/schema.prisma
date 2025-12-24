@@ -9,7 +9,6 @@ datasource db {
 enum ActionType {
   IMAGE
   IOT
-  NONE
 }
 
 model Game {
@@ -23,7 +22,7 @@ model Game {
 
 model Level {
   id         Int           @id @default(autoincrement())
-  game       Game          @relation(fields: [gameId], references: [id])
+  game       Game          @relation(fields: [gameId], references: [id], onDelete: Cascade)
   gameId     Int
   name       String
   slug       String
@@ -39,9 +38,10 @@ model Level {
 
 model LevelDetail {
   id         Int        @id @default(autoincrement())
-  level      Level      @relation(fields: [levelId], references: [id])
+  level      Level      @relation(fields: [levelId], references: [id], onDelete: Cascade)
   levelId    Int
-  actionType ActionType @default(NONE)
+  name       String
+  actionType ActionType @default(IMAGE)
   content    String
   meta       Json?
   createdAt  DateTime   @default(now())

@@ -60,7 +60,6 @@ export default function DetailEditor({ levelIndex, detailIndex, t }: Props) {
                                 `levels.${levelIndex}.details.${detailIndex}.actionType`
                             )}
                         >
-                            <option value='NONE'>NONE</option>
                             <option value='IMAGE'>IMAGE</option>
                             <option value='IOT'>IOT</option>
                         </select>

@@ -23,7 +23,7 @@ export async function createGame(data: any) {
                         order: index,
                         details: {
                             create: level.details.map((detail: any) => ({
-                                actionType: detail.actionType || 'NONE',
+                                actionType: detail.actionType || 'IMAGE',
                                 content: detail.content,
                                 meta: detail.meta,
                             })),
@@ -101,7 +101,7 @@ export async function updateGame(id: number, data: any) {
                         details: {
                             create: level.details.map((detail: any) => ({
                                 name: detail.name,
-                                actionType: detail.actionType || 'NONE',
+                                actionType: detail.actionType || 'IMAGE',
                                 content: detail.content,
                                 meta: detail.meta,
                             })),

@@ -13,7 +13,7 @@ export default function GameRow({ id, name, updatedAt }: Props) {
 
     return (
         <tr
-            onClick={() => router.push(`/sys-console/game/${id}`)}
+            onClick={() => router.push(`/sys-console/games/${id}`)}
             style={{ cursor: 'pointer' }}
             className='game-row'
         >
