@@ -76,5 +76,10 @@
                 "required": "This field is required"
             }
         }
+    },
+    "gamePlay": {
+        "accessGranted": "ACCESS GRANTED",
+        "openEnvelope": "Open Envelope",
+        "activate": "Activate {name}"
     }
 }

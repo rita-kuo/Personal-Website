@@ -76,5 +76,10 @@
                 "required": "此欄位為必填"
             }
         }
+    },
+    "gamePlay": {
+        "accessGranted": "存取授權通過",
+        "openEnvelope": "開啟信封",
+        "activate": "啟動 {name}"
     }
 }

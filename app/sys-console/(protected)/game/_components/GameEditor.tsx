@@ -371,7 +371,7 @@ export default function GameEditor({ initialGame, t }: Props) {
                                     width: 'auto',
                                 }}
                             >
-                                <i className='ri-delete-bin-line'></i>{' '}
+                                <i className='ri-delete-bin-line'></i>
                                 {t.delete}
                             </button>
                         )}
