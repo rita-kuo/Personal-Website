@@ -32,7 +32,7 @@ export async function generateMetadata({ params }: PageProps) {
     }
 
     return {
-        title: `${level.name} - ${level.game.name}`,
+        title: level.game.name,
     };
 }
 
