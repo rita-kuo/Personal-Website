@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation';
 import { arrayMove } from '@dnd-kit/sortable';
 import { useForm, useFieldArray, FormProvider } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { z } from 'zod';
+import { set, z } from 'zod';
 import styles from '../game-editor.module.css';
 import LevelList from './LevelList';
 import LevelDetailList from './LevelDetailList';
@@ -264,7 +264,8 @@ export default function GameEditor({ initialGame, t }: Props) {
         }
 
         if (result.success) {
-            router.push('/sys-console/games');
+            if (!initialGame) router.push('/sys-console/games');
+            else setIsSaving(false);
         } else {
             alert('Failed to save game');
             setIsSaving(false);

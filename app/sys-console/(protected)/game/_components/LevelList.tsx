@@ -83,7 +83,7 @@ export default function LevelList({
                                     }`}
                                     onClick={() => onSelect(level.id)}
                                 >
-                                    {level.name}
+                                    {level.name} ({level.slug})
                                 </SortableItem>
                             ))}
                         </div>
