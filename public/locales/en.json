@@ -82,6 +82,10 @@
     "gamePlay": {
         "accessGranted": "ACCESS GRANTED",
         "openEnvelope": "Open Envelope",
-        "activate": "Activate {name}"
+        "activate": "Activate {name}",
+        "invalidLevelTitle": "Wrong Guess",
+        "invalidLevelHeadline": "That guess was off the mark.",
+        "invalidLevelDescription": "Random guesses won't solve it. Return to the puzzle and try again.",
+        "invalidLevelBack": "Back to the game"
     }
 }
