@@ -43,9 +43,11 @@
         "gameEditor": {
             "newTitle": "新增遊戲",
             "editTitle": "編輯遊戲",
+            "editTitleWithName": "編輯 {name}",
             "gameName": "遊戲名稱",
             "name": "名稱",
             "slug": "Slug",
+            "generateUUID": "使用一組新的 uuid",
             "save": "儲存遊戲",
             "saving": "儲存中...",
             "levels": "關卡列表",

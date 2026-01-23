@@ -15,9 +15,21 @@ export async function generateMetadata({
     const { messages } = await getMessages(locale, 'sys');
     const t = (messages as any).gameEditor;
     const { id } = await params;
+    const gameId = parseInt(id, 10);
+
+    if (isNaN(gameId)) {
+        return {
+            title: t.editTitle,
+        };
+    }
+
+    const game = await getGame(gameId);
+    const title = game
+        ? t.editTitleWithName.replace('{name}', game.name)
+        : t.editTitle;
 
     return {
-        title: `${t.title} - ${id}`,
+        title,
     };
 }
 

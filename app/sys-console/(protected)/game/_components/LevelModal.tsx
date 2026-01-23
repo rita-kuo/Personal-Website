@@ -44,6 +44,10 @@ export default function LevelModal({
         }
     };
 
+    const generateUUID = () => {
+        setSlug(crypto.randomUUID());
+    };
+
     return (
         <div className={styles.modalOverlay}>
             <div className={styles.modal}>
@@ -70,6 +74,13 @@ export default function LevelModal({
                             placeholder={t.placeholders.slug}
                             required
                         />
+                        <button
+                            type='button'
+                            className={styles.generateUuidBtn}
+                            onClick={generateUUID}
+                        >
+                            {t.generateUUID}
+                        </button>
                     </label>
                     <div className={styles.modalActions}>
                         <button

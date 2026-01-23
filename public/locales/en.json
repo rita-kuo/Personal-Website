@@ -43,9 +43,11 @@
         "gameEditor": {
             "newTitle": "New Game",
             "editTitle": "Edit Game",
+            "editTitleWithName": "Edit {name}",
             "gameName": "Game Name",
             "name": "Name",
             "slug": "Slug",
+            "generateUUID": "Generate New UUID",
             "save": "Save Game",
             "saving": "Saving...",
             "levels": "Levels",
