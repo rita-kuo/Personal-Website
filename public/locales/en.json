@@ -86,6 +86,8 @@
         "invalidLevelTitle": "Wrong Guess",
         "invalidLevelHeadline": "That guess was off the mark.",
         "invalidLevelDescription": "Random guesses won't solve it. Return to the puzzle and try again.",
-        "invalidLevelBack": "Back to the game"
+        "invalidLevelBack": "Back to the game",
+        "levelNotFoundTitle": "Wrong Guess!",
+        "levelNotFoundBody": "Rather than taking shortcuts, go back and solve the puzzle."
     }
 }

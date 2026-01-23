@@ -1,5 +1,6 @@
-import { notFound } from 'next/navigation';
+import { redirect } from 'next/navigation';
 import prisma from '@/lib/db';
+import { getMessages } from '@/lib/getMessages';
 import LevelDetailList from './_components/LevelDetailList';
 
 interface PageProps {
@@ -26,8 +27,9 @@ export async function generateMetadata({ params }: PageProps) {
     });
 
     if (!level) {
+        const { messages } = await getMessages(locale, 'gamePlay');
         return {
-            title: 'Not Found',
+            title: messages.levelNotFoundTitle ?? '',
         };
     }
 
@@ -37,7 +39,7 @@ export async function generateMetadata({ params }: PageProps) {
 }
 
 export default async function LevelPage({ params }: PageProps) {
-    const { gameSlug, levelSlug } = await params;
+    const { gameSlug, levelSlug, locale } = await params;
 
     const level = await prisma.level.findFirst({
         where: {
@@ -56,10 +58,8 @@ export default async function LevelPage({ params }: PageProps) {
     });
 
     if (!level) {
-        notFound();
+        redirect(`/${locale}/game/${gameSlug}/level-not-found`);
     }
-
-    console.log('Level details:', level.details);
 
     return (
         <main className='container'>

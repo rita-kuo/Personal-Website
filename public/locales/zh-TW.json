@@ -86,6 +86,8 @@
         "invalidLevelTitle": "猜錯了",
         "invalidLevelHeadline": "這不是正確的解法。",
         "invalidLevelDescription": "亂猜是不對的，快回到解謎遊戲裡再試一次。",
-        "invalidLevelBack": "回到解謎遊戲"
+        "invalidLevelBack": "回到解謎遊戲",
+        "levelNotFoundTitle": "猜錯囉！",
+        "levelNotFoundBody": "與其抄捷徑，還是回去解謎吧 XD"
     }
 }
