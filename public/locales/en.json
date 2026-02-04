@@ -3,6 +3,122 @@
         "title": "Hello",
         "description": "Welcome to the site"
     },
+    "itinerary": {
+        "title": "Trip Itinerary",
+        "daySwitch": {
+            "prev": "Previous day",
+            "next": "Next day",
+            "label": "Select a day"
+        },
+        "labels": {
+            "time": "Time",
+            "location": "Location",
+            "parking": "Parking",
+            "contact": "Contact",
+            "memo": "Memo",
+            "detailTitle": "Details",
+            "noMemo": "No memo yet",
+            "emptyDay": "No itinerary items for this day.",
+            "emptySelection": "Select an item with memo to view details.",
+            "noLinks": "No links yet",
+            "notAvailable": "Not available"
+        },
+        "aria": {
+            "prevDay": "Previous day",
+            "nextDay": "Next day",
+            "location": "Open location link",
+            "parking": "Open parking link",
+            "contact": "Open contact link"
+        },
+        "data": {
+            "days": [
+                {
+                    "id": "day-2026-02-04",
+                    "date": "2026-02-04",
+                    "weekday": "TUE",
+                    "items": [
+                        {
+                            "id": "item-2026-02-04-1",
+                            "startTime": "07:30",
+                            "endTime": null,
+                            "title": "Departure",
+                            "location": null,
+                            "parking": null,
+                            "contact": null,
+                            "memo": null
+                        },
+                        {
+                            "id": "item-2026-02-04-2",
+                            "startTime": "08:15",
+                            "endTime": "09:30",
+                            "title": "Breakfast at Cafe Lumi",
+                            "location": "https://maps.app.goo.gl/3qkP8G9x3B",
+                            "parking": null,
+                            "contact": "https://example.com/message",
+                            "memo": "Arrive early for the window seats.\nTry the seasonal latte."
+                        },
+                        {
+                            "id": "item-2026-02-04-3",
+                            "startTime": "10:00",
+                            "endTime": "12:00",
+                            "title": "City Museum",
+                            "location": "https://maps.app.goo.gl/4wYy9K2N1A",
+                            "parking": "https://example.com/parking",
+                            "contact": null,
+                            "memo": "Tickets reserved at the main entrance.\nFocus on the modern art wing."
+                        },
+                        {
+                            "id": "item-2026-02-04-4",
+                            "startTime": "18:00",
+                            "endTime": "20:00",
+                            "title": "Night Market Walk",
+                            "location": "https://maps.app.goo.gl/8yE1c2Lz7K",
+                            "parking": null,
+                            "contact": null,
+                            "memo": "Meet at the lantern gate.\nTry the local dumplings."
+                        }
+                    ]
+                },
+                {
+                    "id": "day-2026-02-05",
+                    "date": "2026-02-05",
+                    "weekday": "WED",
+                    "items": [
+                        {
+                            "id": "item-2026-02-05-1",
+                            "startTime": "09:00",
+                            "endTime": null,
+                            "title": "Departure",
+                            "location": null,
+                            "parking": null,
+                            "contact": null,
+                            "memo": null
+                        },
+                        {
+                            "id": "item-2026-02-05-2",
+                            "startTime": "10:00",
+                            "endTime": "12:30",
+                            "title": "Lakeside Park",
+                            "location": "https://maps.app.goo.gl/9wVt5J1QaX",
+                            "parking": "https://example.com/lake-parking",
+                            "contact": null,
+                            "memo": "Bring a light jacket.\nBoat rental is near the east dock."
+                        },
+                        {
+                            "id": "item-2026-02-05-3",
+                            "startTime": "14:00",
+                            "endTime": "16:00",
+                            "title": "Market Street Cafe",
+                            "location": "https://maps.app.goo.gl/2rS8K4pLmN",
+                            "parking": null,
+                            "contact": "https://example.com/contact",
+                            "memo": "Reserve a table for four.\nOrder the signature toast."
+                        }
+                    ]
+                }
+            ]
+        }
+    },
     "auth": {
         "loginTitle": "System Console Login",
         "loginButton": "Log in with LINE",
@@ -38,6 +154,36 @@
             "pagination": {
                 "prev": "Previous",
                 "next": "Next"
+            }
+        },
+        "itinerary": {
+            "title": "Itinerary Management",
+            "daySwitch": {
+                "prev": "Previous day",
+                "next": "Next day",
+                "label": "Select a day"
+            },
+            "labels": {
+                "timeline": "Timeline",
+                "editor": "Item Editor",
+                "timeStart": "Start Time",
+                "timeEnd": "End Time",
+                "title": "Title",
+                "location": "Location Link",
+                "parking": "Parking Link",
+                "contact": "Contact Link",
+                "memo": "Memo",
+                "save": "Save Changes",
+                "saving": "Saving...",
+                "addItem": "Add Item",
+                "emptySelection": "Select an item to edit.",
+                "emptyDay": "No itinerary items for this day."
+            },
+            "validation": {
+                "required": "This field is required",
+                "invalidUrl": "Please enter a valid URL",
+                "endBeforeStart": "End time must be after start time",
+                "tooLong": "Text is too long"
             }
         },
         "gameEditor": {
