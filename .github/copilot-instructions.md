@@ -5,6 +5,7 @@
 - **禁用 Inline Styles**：嚴禁使用 `style={{...}}`。
 - **Pico.css 優先**：利用 Pico.css 的語意化標籤（例如 `<main class="container">`, `<grid>`, `<article>`）進行佈局。
 - **動畫實作**：僅使用 **Animate.css** 的類別（例如 `animate__animated animate__bounce`）。
+- **Modal 樣式**：所有 Modal 的開啟及關閉均需要動畫效果。
 - **自定義樣式**：若需微調，請使用 CSS Modules (`.module.css`)，保持 JSX 清爽。
 - **字體大小限制**：除非有明確指示，否則字體大小不應超過 `h1`。
 - **圖示來源**：使用 [remixicon](https://remixicon.com/) 作為圖示來源，避免使用其他圖示庫。

@@ -1,22 +1,35 @@
 'use client';
 
-import { useEffect, useMemo, useState } from 'react';
-import { useForm } from 'react-hook-form';
+import { useCallback, useEffect, useMemo, useState } from 'react';
+import { FormProvider, useForm } from 'react-hook-form';
+import { useRouter } from 'next/navigation';
 import styles from '../itinerary.module.css';
+import ItineraryEmptyState from './ItineraryEmptyState';
+import ItineraryHeader from './ItineraryHeader';
+import ItineraryItemEditor from './ItineraryItemEditor';
+import ItineraryListItem from './ItineraryListItem';
+import EditTripModal from './EditTripModal';
+import ConfirmModal from '@/app/sys-console/_components/ConfirmModal';
 import {
     addItineraryItem,
-    updateItineraryItem,
+    addItineraryItemAfter,
+    addItineraryDayAfter,
+    createItineraryDay,
+    deleteItineraryItem,
+    deleteItineraryDay,
+    deleteItineraryTrip,
+    saveItineraryTrip,
 } from '@/app/sys-console/(protected)/itinerary/actions';
 
 type ItineraryItem = {
     id: number;
     startTime: string;
-    endTime?: string | null;
+    endTime: string | null;
     title: string;
-    location?: string | null;
-    parking?: string | null;
-    contact?: string | null;
-    memo?: string | null;
+    location: string | null;
+    parking: string | null;
+    contact: string | null;
+    memo: string | null;
 };
 
 type ItineraryDay = {
@@ -26,37 +39,85 @@ type ItineraryDay = {
 };
 
 type AdminMessages = {
-    sys: {
-        itinerary: {
+    itinerary: {
+        title: string;
+        daySwitch: {
+            prev: string;
+            next: string;
+            addPrev: string;
+            addNext: string;
+            label: string;
+        };
+        labels: {
+            timeline: string;
+            dayList: string;
+            editor: string;
+            timeStart: string;
+            timeEnd: string;
             title: string;
-            daySwitch: {
-                prev: string;
-                next: string;
-                label: string;
-            };
-            labels: {
-                timeline: string;
-                editor: string;
-                timeStart: string;
-                timeEnd: string;
-                title: string;
-                location: string;
-                parking: string;
-                contact: string;
-                memo: string;
-                save: string;
-                saving: string;
-                addItem: string;
-                emptySelection: string;
-                emptyDay: string;
-                weekdays: string[];
-            };
-            validation: {
-                required: string;
-                invalidUrl: string;
-                endBeforeStart: string;
-                tooLong: string;
-            };
+            location: string;
+            parking: string;
+            contact: string;
+            memo: string;
+            saveTrip: string;
+            savingTrip: string;
+            addItem: string;
+            deleteItem: string;
+            editTrip: string;
+            deleteTrip: string;
+            emptySelection: string;
+            emptyDay: string;
+            emptyTitle: string;
+            emptyBody: string;
+            addDay: string;
+            departureTitle: string;
+            weekdays: string[];
+        };
+        tripModal: {
+            title: string;
+            nameLabel: string;
+            slugLabel: string;
+            cancel: string;
+            save: string;
+            saving: string;
+        };
+        tripDeleteModal: {
+            title: string;
+            body: string;
+            cancel: string;
+            confirm: string;
+            deleting: string;
+        };
+        dayModal: {
+            title: string;
+            dateLabel: string;
+            cancel: string;
+            create: string;
+            creating: string;
+        };
+        itemDeleteModal: {
+            title: string;
+            body: string;
+            cancel: string;
+            confirm: string;
+            deleting: string;
+        };
+        dayDeleteModal: {
+            title: string;
+            body: string;
+            cancel: string;
+            confirm: string;
+            deleting: string;
+        };
+        validation: {
+            required: string;
+            invalidUrl: string;
+            endBeforeStart: string;
+            tooLong: string;
+            dateDuplicate: string;
+            dateInvalid: string;
+            saveFailed: string;
+            slugDuplicate: string;
         };
     };
 };
@@ -93,34 +154,51 @@ const formatDayTitle = (day: ItineraryDay, labels: string[]) => {
 };
 
 const getDefaultSelectionId = (day: ItineraryDay) => {
-    const now = new Date();
-    const started = day.items.filter((item) => {
-        const itemDate = new Date(item.startTime);
-        return itemDate <= now;
-    });
-
-    if (started.length === 0) return null;
-    return started[started.length - 1].id;
+    return day.items[0]?.id ?? null;
 };
 
-const isValidUrl = (value: string) =>
-    value.length === 0 || /^https?:\/\//.test(value);
+const formatItemDescription = (item: ItineraryItem) => {
+    const start = formatTime(item.startTime);
+    if (!item.endTime) return start;
+    return `${start} - ${formatTime(item.endTime)}`;
+};
 
 export default function ItineraryAdmin({
     messages,
     days: initialDays,
+    tripId,
+    tripTitle: initialTripTitle,
+    tripSlug: initialTripSlug,
 }: {
     messages: AdminMessages;
     days: ItineraryDay[];
+    tripId: number;
+    tripTitle: string;
+    tripSlug: string;
 }) {
-    const t = messages.sys.itinerary;
+    const t = messages.itinerary;
+    const router = useRouter();
     const [days, setDays] = useState<ItineraryDay[]>(initialDays);
     const [selectedDayIndex, setSelectedDayIndex] = useState(0);
     const [selectedItemId, setSelectedItemId] = useState<number | null>(null);
-    const [isSaving, setIsSaving] = useState(false);
+    const [tripTitle, setTripTitle] = useState(initialTripTitle);
+    const [tripSlug, setTripSlug] = useState(initialTripSlug);
+    const [isTripDirty, setIsTripDirty] = useState(false);
+    const [isSavingTrip, setIsSavingTrip] = useState(false);
+    const [tripSaveError, setTripSaveError] = useState('');
+    const [isEditTripModalOpen, setIsEditTripModalOpen] = useState(false);
+    const [isDeleteTripModalOpen, setIsDeleteTripModalOpen] = useState(false);
+    const [isDeletingTrip, setIsDeletingTrip] = useState(false);
+    const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+    const [isDeleting, setIsDeleting] = useState(false);
+    const [deleteDayTargetId, setDeleteDayTargetId] = useState<number | null>(
+        null,
+    );
+    const [deleteDayTargetIndex, setDeleteDayTargetIndex] = useState(0);
+    const [isDeleteItemModalOpen, setIsDeleteItemModalOpen] = useState(false);
+    const [isDeletingItem, setIsDeletingItem] = useState(false);
 
     const hasDays = days.length > 0;
-
     const selectedDay = days[selectedDayIndex];
     const items = selectedDay?.items ?? [];
     const selectedItem = items.find((item) => item.id === selectedItemId);
@@ -153,15 +231,10 @@ export default function ItineraryAdmin({
             contact: '',
             memo: '',
         },
+        mode: 'onChange',
     });
 
-    const {
-        register,
-        handleSubmit,
-        reset,
-        getValues,
-        formState: { errors },
-    } = form;
+    const { reset } = form;
 
     useEffect(() => {
         if (!selectedItem) return;
@@ -176,20 +249,67 @@ export default function ItineraryAdmin({
         });
     }, [reset, selectedItem]);
 
-    const onSubmit = handleSubmit(async (values) => {
-        if (!selectedDay || selectedItemIndex < 0 || !selectedItemId) return;
-        setIsSaving(true);
+    const updateSelectedItem = useCallback(
+        (updates: Partial<ItineraryItem>) => {
+            if (!selectedDay || !selectedItemId) return;
+            setDays((prev) =>
+                prev.map((day) => {
+                    if (day.id !== selectedDay.id) return day;
+                    const nextItems = day.items.map((item) =>
+                        item.id === selectedItemId
+                            ? { ...item, ...updates }
+                            : item,
+                    );
+                    const sorted = [...nextItems].sort(
+                        (a, b) =>
+                            new Date(a.startTime).getTime() -
+                            new Date(b.startTime).getTime(),
+                    );
+                    return { ...day, items: sorted };
+                }),
+            );
+            setIsTripDirty(true);
+            setTripSaveError('');
+        },
+        [selectedDay, selectedItemId],
+    );
 
-        const updatedDay = await updateItineraryItem({
+    const handleSaveTrip = useCallback(async () => {
+        if (!isTripDirty) return;
+        setIsSavingTrip(true);
+        setTripSaveError('');
+
+        const result = await saveItineraryTrip({
+            tripId,
+            title: tripTitle,
+            slug: tripSlug,
+            days,
+        });
+
+        setIsSavingTrip(false);
+
+        if (result?.error) {
+            if (result.error === 'SLUG_EXISTS') {
+                setTripSaveError(t.validation.slugDuplicate);
+            } else {
+                setTripSaveError(t.validation.saveFailed);
+            }
+            return;
+        }
+
+        if (result?.trip) {
+            setDays(result.trip.days ?? []);
+            setTripTitle(result.trip.title);
+            setTripSlug(result.trip.slug);
+            setIsTripDirty(false);
+        }
+    }, [days, isTripDirty, tripId, tripSlug, tripTitle, t.validation]);
+
+    const handleInsertItem = async (afterItemId: number) => {
+        if (!selectedDay) return;
+        const updatedDay = await addItineraryItemAfter({
             dayId: selectedDay.id,
-            itemId: selectedItemId,
-            title: values.title,
-            startTime: values.startTime,
-            endTime: values.endTime,
-            location: values.location,
-            parking: values.parking,
-            contact: values.contact,
-            memo: values.memo,
+            afterItemId,
         });
 
         if (updatedDay) {
@@ -198,12 +318,15 @@ export default function ItineraryAdmin({
                     day.id === updatedDay.id ? updatedDay : day,
                 ),
             );
+            setIsTripDirty(true);
+            const newestItem = updatedDay.items[updatedDay.items.length - 1];
+            if (newestItem) {
+                setSelectedItemId(newestItem.id);
+            }
         }
+    };
 
-        setIsSaving(false);
-    });
-
-    const handleAddItem = async () => {
+    const handleAddFirstItem = async () => {
         if (!selectedDay) return;
         const updatedDay = await addItineraryItem({
             dayId: selectedDay.id,
@@ -215,6 +338,7 @@ export default function ItineraryAdmin({
                     day.id === updatedDay.id ? updatedDay : day,
                 ),
             );
+            setIsTripDirty(true);
             const newestItem = updatedDay.items[updatedDay.items.length - 1];
             if (newestItem) {
                 setSelectedItemId(newestItem.id);
@@ -222,306 +346,357 @@ export default function ItineraryAdmin({
         }
     };
 
+    const handleAddFirstDay = async () => {
+        const result = await createItineraryDay({
+            tripId,
+            departureTitle: t.labels.departureTitle,
+        });
+
+        if (result?.days) {
+            setDays(result.days);
+            setSelectedDayIndex(0);
+            setIsTripDirty(true);
+        }
+    };
+
+    const handleAddDayAfter = async (afterDayId: number) => {
+        const result = await addItineraryDayAfter({
+            tripId,
+            dayId: afterDayId,
+            departureTitle: t.labels.departureTitle,
+        });
+
+        if (result?.days) {
+            setDays(result.days);
+            if (result.newDayId) {
+                const newIndex = result.days.findIndex(
+                    (day) => day.id === result.newDayId,
+                );
+                setSelectedDayIndex(newIndex >= 0 ? newIndex : 0);
+            }
+            setIsTripDirty(true);
+        }
+    };
+
+    const openDeleteModal = (dayId: number, dayIndex: number) => {
+        setDeleteDayTargetId(dayId);
+        setDeleteDayTargetIndex(dayIndex);
+        setIsDeleteModalOpen(true);
+    };
+
+    const closeDeleteModal = () => {
+        setIsDeleteModalOpen(false);
+        setDeleteDayTargetId(null);
+    };
+
+    const openEditTripModal = () => {
+        setIsEditTripModalOpen(true);
+    };
+
+    const closeEditTripModal = () => {
+        setIsEditTripModalOpen(false);
+    };
+    const handleTripMetaSave = (nextTitle: string, nextSlug: string) => {
+        setTripTitle(nextTitle);
+        setTripSlug(nextSlug);
+        setIsTripDirty(true);
+        setTripSaveError('');
+    };
+
+    const openDeleteTripModal = () => {
+        setIsDeleteTripModalOpen(true);
+    };
+
+    const closeDeleteTripModal = () => {
+        setIsDeleteTripModalOpen(false);
+    };
+
+    const openDeleteItemModal = () => {
+        if (!selectedItemId) return;
+        setIsDeleteItemModalOpen(true);
+    };
+
+    const openDeleteItemModalWithId = (itemId: number) => {
+        setSelectedItemId(itemId);
+        setIsDeleteItemModalOpen(true);
+    };
+
+    const closeDeleteItemModal = () => {
+        setIsDeleteItemModalOpen(false);
+    };
+
+    const handleDeleteDay = async () => {
+        if (!deleteDayTargetId) return;
+        setIsDeleting(true);
+        const result = await deleteItineraryDay({
+            tripId,
+            dayId: deleteDayTargetId,
+        });
+        setIsDeleting(false);
+
+        if (result?.days) {
+            setDays(result.days);
+            const nextIndex = result.days.length
+                ? Math.min(deleteDayTargetIndex, result.days.length - 1)
+                : 0;
+            setSelectedDayIndex(nextIndex);
+            setIsTripDirty(true);
+            closeDeleteModal();
+        }
+    };
+
+    const handleDeleteItem = async () => {
+        if (!selectedDay || !selectedItemId) return;
+        setIsDeletingItem(true);
+        const updatedDay = await deleteItineraryItem({
+            dayId: selectedDay.id,
+            itemId: selectedItemId,
+        });
+        setIsDeletingItem(false);
+
+        if (updatedDay) {
+            setDays((prev) =>
+                prev.map((day) =>
+                    day.id === updatedDay.id ? updatedDay : day,
+                ),
+            );
+            setIsTripDirty(true);
+            if (updatedDay.items.length === 0) {
+                setSelectedItemId(null);
+            } else {
+                const nextIndex = Math.min(
+                    selectedItemIndex,
+                    updatedDay.items.length - 1,
+                );
+                const nextItem = updatedDay.items[Math.max(0, nextIndex)];
+                setSelectedItemId(nextItem?.id ?? null);
+            }
+            closeDeleteItemModal();
+        }
+    };
+
+    const handleDeleteTrip = async () => {
+        setIsDeletingTrip(true);
+        const result = await deleteItineraryTrip({ tripId });
+        setIsDeletingTrip(false);
+        if (!result?.error) {
+            router.push('/sys-console/itinerary');
+        }
+    };
+
+    useEffect(() => {
+        const handler = (event: KeyboardEvent) => {
+            if (
+                (event.metaKey || event.ctrlKey) &&
+                event.key.toLowerCase() === 's'
+            ) {
+                event.preventDefault();
+                if (isTripDirty) {
+                    handleSaveTrip();
+                }
+            }
+        };
+
+        window.addEventListener('keydown', handler);
+        return () => window.removeEventListener('keydown', handler);
+    }, [handleSaveTrip, isTripDirty]);
     return (
         <section className={styles.page}>
-            <header className={styles.header}>
-                <h1 className={styles.pageTitle}>{t.title}</h1>
-                <div className={styles.daySwitch}>
-                    <button
-                        type='button'
-                        className={styles.dayButton}
-                        onClick={() =>
-                            setSelectedDayIndex((prev) => Math.max(prev - 1, 0))
-                        }
-                        aria-label={t.daySwitch.prev}
-                        disabled={!hasDays || selectedDayIndex === 0}
-                    >
-                        <i
-                            className={`ri-arrow-left-s-line ${styles.icon}`}
-                            aria-hidden='true'
-                        />
-                    </button>
-                    <label className={styles.daySelectLabel}>
-                        <span className={styles.visuallyHidden}>
-                            {t.daySwitch.label}
-                        </span>
-                        <select
-                            className={styles.daySelect}
-                            value={selectedDayIndex}
-                            disabled={!hasDays}
-                            onChange={(event) =>
-                                setSelectedDayIndex(Number(event.target.value))
-                            }
-                        >
-                            {hasDays ? (
-                                days.map((day, index) => (
-                                    <option key={day.id} value={index}>
-                                        {formatDayTitle(day, weekdayLabels)}
-                                    </option>
-                                ))
-                            ) : (
-                                <option value={0}>—</option>
-                            )}
-                        </select>
-                    </label>
-                    <button
-                        type='button'
-                        className={styles.dayButton}
-                        onClick={() =>
-                            setSelectedDayIndex((prev) =>
-                                Math.min(prev + 1, days.length - 1),
-                            )
-                        }
-                        aria-label={t.daySwitch.next}
-                        disabled={
-                            !hasDays || selectedDayIndex === days.length - 1
-                        }
-                    >
-                        <i
-                            className={`ri-arrow-right-s-line ${styles.icon}`}
-                            aria-hidden='true'
-                        />
-                    </button>
-                </div>
-            </header>
-
-            {items.length === 0 ? (
-                <article className={styles.emptyCard}>
-                    <p className={styles.emptyText}>{t.labels.emptyDay}</p>
-                </article>
-            ) : (
-                <div className={styles.desktopLayoutAdmin}>
-                    <div className={styles.timelineColumn}>
-                        <div className={styles.timelineHeader}>
-                            <h2 className={styles.sectionTitle}>
-                                {t.labels.timeline}
-                            </h2>
-                            <button
-                                type='button'
-                                className={styles.primaryButton}
-                                onClick={handleAddItem}
-                            >
-                                <i
-                                    className={`ri-add-line ${styles.buttonIcon}`}
-                                    aria-hidden='true'
-                                />
-                                {t.labels.addItem}
-                            </button>
+            <ItineraryHeader
+                title={tripTitle || t.title}
+                editLabel={t.labels.editTrip}
+                saveLabel={t.labels.saveTrip}
+                savingLabel={t.labels.savingTrip}
+                deleteLabel={t.labels.deleteTrip}
+                isSaving={isSavingTrip}
+                isDirty={isTripDirty}
+                errorText={tripSaveError}
+                onEdit={openEditTripModal}
+                onSave={handleSaveTrip}
+                onDelete={openDeleteTripModal}
+            />
+            <div className={styles.contentArea}>
+                {!hasDays ? (
+                    <ItineraryEmptyState
+                        title={t.labels.emptyTitle}
+                        body={t.labels.emptyBody}
+                        addLabel={t.labels.addDay}
+                        onAdd={handleAddFirstDay}
+                    />
+                ) : (
+                    <div className={styles.desktopLayoutAdmin}>
+                        <div className={styles.dayColumn}>
+                            <div className={styles.dayListHeader}>
+                                <h2 className={styles.sectionTitle}>
+                                    {t.labels.dayList}
+                                </h2>
+                            </div>
+                            <ol className={styles.dayList}>
+                                {days.map((day, index) => (
+                                    <ItineraryListItem
+                                        key={day.id}
+                                        title={formatDayTitle(
+                                            day,
+                                            weekdayLabels,
+                                        )}
+                                        isSelected={index === selectedDayIndex}
+                                        deleteLabel={t.dayDeleteModal.confirm}
+                                        appendLabel={t.labels.addDay}
+                                        onSelect={() =>
+                                            setSelectedDayIndex(index)
+                                        }
+                                        onDelete={() =>
+                                            openDeleteModal(day.id, index)
+                                        }
+                                        onAppend={() =>
+                                            handleAddDayAfter(day.id)
+                                        }
+                                        containerClassName={styles.dayItem}
+                                        rowClassName={styles.listRow}
+                                        selectClassName={styles.daySelectButton}
+                                        titleClassName={styles.dayTitle}
+                                        appendClassName={styles.addDayButton}
+                                    />
+                                ))}
+                            </ol>
                         </div>
-                        <ol
-                            className={`${styles.timelineList} ${styles.compactList}`}
-                        >
-                            {items.map((item, index) => (
-                                <li
-                                    key={item.id}
-                                    className={styles.timelineItem}
-                                >
-                                    <button
-                                        type='button'
-                                        className={`${styles.compactButton} ${
-                                            item.id === selectedItemId
-                                                ? styles.isSelected
-                                                : ''
-                                        }`}
-                                        onClick={() =>
+                        <div className={styles.timelineColumn}>
+                            <div className={styles.timelineHeader}>
+                                <h2 className={styles.sectionTitle}>
+                                    {selectedDay
+                                        ? `${formatDayTitle(selectedDay, weekdayLabels)}行程`
+                                        : t.labels.timeline}
+                                </h2>
+                            </div>
+                            <ol
+                                className={`${styles.timelineList} ${styles.compactList}`}
+                            >
+                                {items.length === 0 && (
+                                    <li className={styles.timelineItem}>
+                                        <button
+                                            type='button'
+                                            className={styles.addItemButton}
+                                            aria-label={t.labels.addItem}
+                                            onClick={handleAddFirstItem}
+                                        >
+                                            <i
+                                                className='ri-add-line'
+                                                aria-hidden='true'
+                                            />
+                                        </button>
+                                    </li>
+                                )}
+                                {items.map((item) => (
+                                    <ItineraryListItem
+                                        key={item.id}
+                                        title={item.title || t.labels.title}
+                                        description={formatItemDescription(
+                                            item,
+                                        )}
+                                        isSelected={item.id === selectedItemId}
+                                        deleteLabel={t.labels.deleteItem}
+                                        appendLabel={t.labels.addItem}
+                                        onSelect={() =>
                                             setSelectedItemId(item.id)
                                         }
-                                    >
-                                        <span className={styles.compactTitle}>
-                                            {item.title || t.labels.title}
-                                        </span>
-                                        <span className={styles.compactTime}>
-                                            {formatTime(item.startTime)}
-                                            {item.endTime
-                                                ? ` - ${formatTime(item.endTime)}`
-                                                : ''}
-                                        </span>
-                                    </button>
-                                    {index < items.length - 1 && (
-                                        <div
-                                            className={styles.connectorCompact}
-                                            aria-hidden='true'
-                                        >
-                                            <span
-                                                className={styles.connectorLine}
-                                            />
-                                            <i
-                                                className={`ri-car-line ${styles.carIcon}`}
-                                            />
-                                            <span
-                                                className={styles.connectorLine}
-                                            />
-                                        </div>
-                                    )}
-                                </li>
-                            ))}
-                        </ol>
+                                        onDelete={() =>
+                                            openDeleteItemModalWithId(item.id)
+                                        }
+                                        onAppend={() =>
+                                            handleInsertItem(item.id)
+                                        }
+                                        containerClassName={styles.timelineItem}
+                                        rowClassName={styles.listRow}
+                                        selectClassName={styles.compactButton}
+                                        titleClassName={styles.compactTitle}
+                                        descriptionClassName={
+                                            styles.compactTime
+                                        }
+                                        appendClassName={styles.addItemButton}
+                                    />
+                                ))}
+                            </ol>
+                        </div>
+                        <div className={styles.detailColumn}>
+                            <FormProvider {...form}>
+                                <ItineraryItemEditor
+                                    labels={{
+                                        editor: t.labels.editor,
+                                        title: t.labels.title,
+                                        timeStart: t.labels.timeStart,
+                                        timeEnd: t.labels.timeEnd,
+                                        location: t.labels.location,
+                                        parking: t.labels.parking,
+                                        contact: t.labels.contact,
+                                        memo: t.labels.memo,
+                                        deleteItem: t.labels.deleteItem,
+                                        emptySelection: t.labels.emptySelection,
+                                    }}
+                                    validation={{
+                                        required: t.validation.required,
+                                        invalidUrl: t.validation.invalidUrl,
+                                        endBeforeStart:
+                                            t.validation.endBeforeStart,
+                                        tooLong: t.validation.tooLong,
+                                    }}
+                                    selectedItem={selectedItem}
+                                    selectedDay={selectedDay}
+                                    onDelete={openDeleteItemModal}
+                                    updateSelectedItem={updateSelectedItem}
+                                />
+                            </FormProvider>
+                        </div>
                     </div>
-                    <div className={styles.detailColumn}>
-                        <article
-                            className={`${styles.card} ${styles.detailCard}`}
-                        >
-                            <h2 className={styles.sectionTitle}>
-                                {t.labels.editor}
-                            </h2>
-                            {!selectedItem ? (
-                                <p className={styles.emptyText}>
-                                    {t.labels.emptySelection}
-                                </p>
-                            ) : (
-                                <form
-                                    className={styles.form}
-                                    onSubmit={onSubmit}
-                                >
-                                    <label className={styles.formLabel}>
-                                        {t.labels.title}
-                                        <input
-                                            type='text'
-                                            className={styles.input}
-                                            {...register('title', {
-                                                required: t.validation.required,
-                                            })}
-                                        />
-                                        {errors.title && (
-                                            <span className={styles.errorText}>
-                                                {errors.title.message}
-                                            </span>
-                                        )}
-                                    </label>
-                                    <div className={styles.formRow}>
-                                        <label className={styles.formLabel}>
-                                            {t.labels.timeStart}
-                                            <input
-                                                type='time'
-                                                className={styles.input}
-                                                {...register('startTime', {
-                                                    required:
-                                                        t.validation.required,
-                                                })}
-                                            />
-                                            {errors.startTime && (
-                                                <span
-                                                    className={styles.errorText}
-                                                >
-                                                    {errors.startTime.message}
-                                                </span>
-                                            )}
-                                        </label>
-                                        <label className={styles.formLabel}>
-                                            {t.labels.timeEnd}
-                                            <input
-                                                type='time'
-                                                className={styles.input}
-                                                {...register('endTime', {
-                                                    validate: (value) => {
-                                                        if (!value) return true;
-                                                        const start =
-                                                            getValues(
-                                                                'startTime',
-                                                            );
-                                                        if (
-                                                            start &&
-                                                            value < start
-                                                        ) {
-                                                            return t.validation
-                                                                .endBeforeStart;
-                                                        }
-                                                        return true;
-                                                    },
-                                                })}
-                                            />
-                                            {errors.endTime && (
-                                                <span
-                                                    className={styles.errorText}
-                                                >
-                                                    {errors.endTime.message}
-                                                </span>
-                                            )}
-                                        </label>
-                                    </div>
-                                    <label className={styles.formLabel}>
-                                        {t.labels.location}
-                                        <input
-                                            type='url'
-                                            className={styles.input}
-                                            {...register('location', {
-                                                validate: (value) =>
-                                                    isValidUrl(value) ||
-                                                    t.validation.invalidUrl,
-                                            })}
-                                        />
-                                        {errors.location && (
-                                            <span className={styles.errorText}>
-                                                {errors.location.message}
-                                            </span>
-                                        )}
-                                    </label>
-                                    <label className={styles.formLabel}>
-                                        {t.labels.parking}
-                                        <input
-                                            type='url'
-                                            className={styles.input}
-                                            {...register('parking', {
-                                                validate: (value) =>
-                                                    isValidUrl(value) ||
-                                                    t.validation.invalidUrl,
-                                            })}
-                                        />
-                                        {errors.parking && (
-                                            <span className={styles.errorText}>
-                                                {errors.parking.message}
-                                            </span>
-                                        )}
-                                    </label>
-                                    <label className={styles.formLabel}>
-                                        {t.labels.contact}
-                                        <input
-                                            type='url'
-                                            className={styles.input}
-                                            {...register('contact', {
-                                                validate: (value) =>
-                                                    isValidUrl(value) ||
-                                                    t.validation.invalidUrl,
-                                            })}
-                                        />
-                                        {errors.contact && (
-                                            <span className={styles.errorText}>
-                                                {errors.contact.message}
-                                            </span>
-                                        )}
-                                    </label>
-                                    <label className={styles.formLabel}>
-                                        {t.labels.memo}
-                                        <textarea
-                                            className={styles.textarea}
-                                            rows={4}
-                                            {...register('memo', {
-                                                validate: (value) =>
-                                                    value.length <= 500 ||
-                                                    t.validation.tooLong,
-                                            })}
-                                        />
-                                        {errors.memo && (
-                                            <span className={styles.errorText}>
-                                                {errors.memo.message}
-                                            </span>
-                                        )}
-                                    </label>
-                                    <button
-                                        type='submit'
-                                        className={styles.primaryButton}
-                                        disabled={isSaving}
-                                    >
-                                        {isSaving
-                                            ? t.labels.saving
-                                            : t.labels.save}
-                                    </button>
-                                </form>
-                            )}
-                        </article>
-                    </div>
-                </div>
-            )}
+                )}
+            </div>
+            <ConfirmModal
+                isOpen={isDeleteItemModalOpen}
+                title={t.itemDeleteModal.title}
+                body={t.itemDeleteModal.body}
+                cancelLabel={t.itemDeleteModal.cancel}
+                confirmLabel={t.itemDeleteModal.confirm}
+                confirmingLabel={t.itemDeleteModal.deleting}
+                isConfirming={isDeletingItem}
+                onCancel={closeDeleteItemModal}
+                onConfirm={handleDeleteItem}
+            />
+            <ConfirmModal
+                isOpen={isDeleteModalOpen}
+                title={t.dayDeleteModal.title}
+                body={t.dayDeleteModal.body}
+                cancelLabel={t.dayDeleteModal.cancel}
+                confirmLabel={t.dayDeleteModal.confirm}
+                confirmingLabel={t.dayDeleteModal.deleting}
+                isConfirming={isDeleting}
+                onCancel={closeDeleteModal}
+                onConfirm={handleDeleteDay}
+            />
+            <EditTripModal
+                isOpen={isEditTripModalOpen}
+                title={tripTitle}
+                slug={tripSlug}
+                labels={{
+                    title: t.tripModal.title,
+                    nameLabel: t.tripModal.nameLabel,
+                    slugLabel: t.tripModal.slugLabel,
+                    cancel: t.tripModal.cancel,
+                    save: t.tripModal.save,
+                }}
+                requiredMessage={t.validation.required}
+                onClose={closeEditTripModal}
+                onSave={handleTripMetaSave}
+            />
+            <ConfirmModal
+                isOpen={isDeleteTripModalOpen}
+                title={t.tripDeleteModal.title}
+                body={t.tripDeleteModal.body}
+                cancelLabel={t.tripDeleteModal.cancel}
+                confirmLabel={t.tripDeleteModal.confirm}
+                confirmingLabel={t.tripDeleteModal.deleting}
+                isConfirming={isDeletingTrip}
+                onCancel={closeDeleteTripModal}
+                onConfirm={handleDeleteTrip}
+            />
         </section>
     );
 }

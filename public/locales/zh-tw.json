@@ -95,10 +95,49 @@
             "daySwitch": {
                 "prev": "前一天",
                 "next": "後一天",
+                "addPrev": "新增前一天",
+                "addNext": "新增後一天",
                 "label": "選擇日期"
             },
+            "dayModal": {
+                "title": "新增一天",
+                "dateLabel": "日期",
+                "cancel": "取消",
+                "create": "建立",
+                "creating": "建立中..."
+            },
+            "dayDeleteModal": {
+                "title": "刪除此天？",
+                "body": "此動作會刪除此天與相關行程項目。",
+                "cancel": "取消",
+                "confirm": "刪除",
+                "deleting": "刪除中..."
+            },
+            "itemDeleteModal": {
+                "title": "刪除此項目？",
+                "body": "此動作無法復原。",
+                "cancel": "取消",
+                "confirm": "刪除",
+                "deleting": "刪除中..."
+            },
+            "tripModal": {
+                "title": "編輯行程",
+                "nameLabel": "行程名稱",
+                "slugLabel": "Slug",
+                "cancel": "取消",
+                "save": "更新",
+                "saving": "儲存中..."
+            },
+            "tripDeleteModal": {
+                "title": "刪除行程？",
+                "body": "此動作會刪除行程與所有天數項目。",
+                "cancel": "取消",
+                "confirm": "刪除",
+                "deleting": "刪除中..."
+            },
             "labels": {
-                "timeline": "時間軸",
+                "timeline": "行程",
+                "dayList": "日期",
                 "editor": "項目編輯",
                 "timeStart": "開始時間",
                 "timeEnd": "結束時間",
@@ -107,18 +146,37 @@
                 "parking": "停車連結",
                 "contact": "聯絡連結",
                 "memo": "備註",
-                "save": "儲存變更",
-                "saving": "儲存中...",
+                "saveTrip": "儲存",
+                "savingTrip": "儲存中...",
                 "addItem": "新增行程",
+                "deleteItem": "刪除項目",
+                "editTrip": "編輯行程",
+                "deleteTrip": "刪除",
                 "emptySelection": "請選擇要編輯的行程",
                 "emptyDay": "今日沒有行程",
-                "weekdays": ["週日", "週一", "週二", "週三", "週四", "週五", "週六"]
+                "emptyTitle": "目前沒有任何行程",
+                "emptyBody": "新增第一天開始規劃。",
+                "addDay": "新增一天",
+                "departureTitle": "出發",
+                "weekdays": [
+                    "週日",
+                    "週一",
+                    "週二",
+                    "週三",
+                    "週四",
+                    "週五",
+                    "週六"
+                ]
             },
             "validation": {
                 "required": "此欄位為必填",
                 "invalidUrl": "請輸入有效的網址",
                 "endBeforeStart": "結束時間需晚於開始時間",
-                "tooLong": "內容過長"
+                "tooLong": "內容過長",
+                "dateDuplicate": "這一天已存在",
+                "dateInvalid": "日期格式不正確",
+                "saveFailed": "儲存失敗，請稍後再試",
+                "slugDuplicate": "此 slug 已被使用"
             }
         },
         "gameEditor": {

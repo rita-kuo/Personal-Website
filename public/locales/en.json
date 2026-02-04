@@ -95,10 +95,49 @@
             "daySwitch": {
                 "prev": "Previous day",
                 "next": "Next day",
+                "addPrev": "Add previous day",
+                "addNext": "Add next day",
                 "label": "Select a day"
             },
+            "dayModal": {
+                "title": "Add a Day",
+                "dateLabel": "Date",
+                "cancel": "Cancel",
+                "create": "Create",
+                "creating": "Creating..."
+            },
+            "dayDeleteModal": {
+                "title": "Delete this day?",
+                "body": "This will delete the selected day and its items.",
+                "cancel": "Cancel",
+                "confirm": "Delete",
+                "deleting": "Deleting..."
+            },
+            "itemDeleteModal": {
+                "title": "Delete this item?",
+                "body": "This action cannot be undone.",
+                "cancel": "Cancel",
+                "confirm": "Delete",
+                "deleting": "Deleting..."
+            },
+            "tripModal": {
+                "title": "Edit itinerary",
+                "nameLabel": "Title",
+                "slugLabel": "Slug",
+                "cancel": "Cancel",
+                "save": "Update",
+                "saving": "Saving..."
+            },
+            "tripDeleteModal": {
+                "title": "Delete this itinerary?",
+                "body": "This will delete the itinerary and all days/items.",
+                "cancel": "Cancel",
+                "confirm": "Delete",
+                "deleting": "Deleting..."
+            },
             "labels": {
-                "timeline": "Timeline",
+                "timeline": "Itinerary",
+                "dayList": "Days",
                 "editor": "Item Editor",
                 "timeStart": "Start Time",
                 "timeEnd": "End Time",
@@ -107,18 +146,29 @@
                 "parking": "Parking Link",
                 "contact": "Contact Link",
                 "memo": "Memo",
-                "save": "Save Changes",
-                "saving": "Saving...",
+                "saveTrip": "Save",
+                "savingTrip": "Saving...",
                 "addItem": "Add Item",
+                "deleteItem": "Delete item",
+                "editTrip": "Edit itinerary",
+                "deleteTrip": "Delete",
                 "emptySelection": "Select an item to edit.",
                 "emptyDay": "No itinerary items for this day.",
+                "emptyTitle": "No itinerary days yet",
+                "emptyBody": "Add your first day to start planning.",
+                "addDay": "Add Day",
+                "departureTitle": "Departure",
                 "weekdays": ["SUN", "MON", "TUE", "WED", "THU", "FRI", "SAT"]
             },
             "validation": {
                 "required": "This field is required",
                 "invalidUrl": "Please enter a valid URL",
                 "endBeforeStart": "End time must be after start time",
-                "tooLong": "Text is too long"
+                "tooLong": "Text is too long",
+                "dateDuplicate": "This date already exists",
+                "dateInvalid": "Invalid date",
+                "saveFailed": "Save failed. Please try again.",
+                "slugDuplicate": "This slug is already in use"
             }
         },
         "gameEditor": {

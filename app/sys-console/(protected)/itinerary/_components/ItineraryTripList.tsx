@@ -83,7 +83,6 @@ export default function ItineraryTripList({
         if (result?.id) {
             closeModal();
             router.push(`/sys-console/itinerary/${result.id}`);
-            router.refresh();
         }
     });
 
