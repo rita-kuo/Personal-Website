@@ -83,6 +83,8 @@
         "accessGranted": "存取授權通過",
         "openEnvelope": "開啟信封",
         "activate": "啟動 {name}",
+        "accessDeniedTitle": "Oops! 記得使用 WIFI 噢！",
+        "accessDeniedBody": "掃描電視上的 QR Code 使用 WIFI 網路進入關卡吧！",
         "invalidLevelTitle": "猜錯了",
         "invalidLevelHeadline": "這不是正確的解法。",
         "invalidLevelDescription": "亂猜是不對的，快回到解謎遊戲裡再試一次。",

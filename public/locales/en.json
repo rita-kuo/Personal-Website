@@ -83,6 +83,8 @@
         "accessGranted": "ACCESS GRANTED",
         "openEnvelope": "Open Envelope",
         "activate": "Activate {name}",
+        "accessDeniedTitle": "Oops! Remember to use WIFI!",
+        "accessDeniedBody": "Scan the QR Code on the TV and use WIFI to enter the level.",
         "invalidLevelTitle": "Wrong Guess",
         "invalidLevelHeadline": "That guess was off the mark.",
         "invalidLevelDescription": "Random guesses won't solve it. Return to the puzzle and try again.",

@@ -50,6 +50,14 @@ model LevelDetail {
   @@index([levelId])
 }
 
+model Config {
+  id        Int      @id @default(autoincrement())
+  key       String   @unique
+  value     String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @default(now()) @updatedAt
+}
+
 model User {
   id            Int       @id @default(autoincrement())
   name          String?

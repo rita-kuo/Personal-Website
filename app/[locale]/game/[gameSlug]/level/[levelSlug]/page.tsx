@@ -1,7 +1,12 @@
-import { redirect } from 'next/navigation';
 import prisma from '@/lib/db';
 import { getMessages } from '@/lib/getMessages';
 import LevelDetailList from './_components/LevelDetailList';
+import CenteredCardLayout from '../../_components/CenteredCardLayout';
+import {
+    getClientIp,
+    getIpWhitelist,
+    isIpAllowed,
+} from '@/app/[locale]/game/[gameSlug]/level/[levelSlug]/ipWhitelist';
 
 interface PageProps {
     params: Promise<{
@@ -13,6 +18,15 @@ interface PageProps {
 
 export async function generateMetadata({ params }: PageProps) {
     const { gameSlug, levelSlug, locale } = await params;
+
+    const clientIp = await getClientIp();
+    const whitelist = await getIpWhitelist();
+    if (!isIpAllowed(whitelist, clientIp)) {
+        const { messages } = await getMessages(locale, 'gamePlay');
+        return {
+            title: messages.accessDeniedTitle ?? '',
+        };
+    }
 
     const level = await prisma.level.findFirst({
         where: {
@@ -41,6 +55,20 @@ export async function generateMetadata({ params }: PageProps) {
 export default async function LevelPage({ params }: PageProps) {
     const { gameSlug, levelSlug, locale } = await params;
 
+    const clientIp = await getClientIp();
+    const whitelist = await getIpWhitelist();
+    if (!isIpAllowed(whitelist, clientIp)) {
+        const { messages } = await getMessages(locale, 'gamePlay');
+        return (
+            <main className='container'>
+                <CenteredCardLayout
+                    title={messages.accessDeniedTitle}
+                    description={messages.accessDeniedBody}
+                />
+            </main>
+        );
+    }
+
     const level = await prisma.level.findFirst({
         where: {
             slug: levelSlug,
@@ -58,7 +86,15 @@ export default async function LevelPage({ params }: PageProps) {
     });
 
     if (!level) {
-        redirect(`/${locale}/game/${gameSlug}/level-not-found`);
+        const { messages } = await getMessages(locale, 'gamePlay');
+        return (
+            <main className='container'>
+                <CenteredCardLayout
+                    title={messages.levelNotFoundTitle}
+                    description={messages.levelNotFoundBody}
+                />
+            </main>
+        );
     }
 
     return (
