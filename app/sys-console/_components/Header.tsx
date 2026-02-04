@@ -16,6 +16,7 @@ type Props = {
     t: {
         title: string;
         game: string;
+        itinerary: string;
         logout: string;
     };
     onLogout: () => Promise<void>;
@@ -197,6 +198,15 @@ export default function Header({ user, t, onLogout }: Props) {
                                         className='secondary sidebar-link no-decoration'
                                     >
                                         {t.game}
+                                    </Link>
+                                </li>
+                                <li>
+                                    <Link
+                                        href='/sys-console/itinerary'
+                                        onClick={closeSidebar}
+                                        className='secondary sidebar-link no-decoration'
+                                    >
+                                        {t.itinerary}
                                     </Link>
                                 </li>
                             </ul>

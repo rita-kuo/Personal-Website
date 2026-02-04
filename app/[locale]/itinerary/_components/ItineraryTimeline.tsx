@@ -4,7 +4,7 @@ import { useEffect, useMemo, useState } from 'react';
 import styles from '../itinerary.module.css';
 
 type ItineraryItem = {
-    id: string;
+    id: number;
     startTime: string;
     endTime?: string | null;
     title: string;
@@ -16,9 +16,8 @@ type ItineraryItem = {
 };
 
 type ItineraryDay = {
-    id: string;
+    id: number;
     date: string;
-    weekday: string;
     items: ItineraryItem[];
 };
 
@@ -41,6 +40,7 @@ type ItineraryMessages = {
         emptySelection: string;
         noLinks: string;
         notAvailable: string;
+        weekdays: string[];
     };
     aria: {
         prevDay: string;
@@ -56,32 +56,35 @@ type ItineraryMessages = {
 
 type Props = {
     messages: ItineraryMessages;
+    days: ItineraryDay[];
 };
 
-const toMinutes = (time: string | null | undefined) => {
-    if (!time) return null;
-    const [hours, minutes] = time.split(':').map(Number);
-    if (Number.isNaN(hours) || Number.isNaN(minutes)) return null;
-    return hours * 60 + minutes;
+const formatTime = (value: string | null | undefined) => {
+    if (!value) return '';
+    const date = new Date(value);
+    const hours = String(date.getHours()).padStart(2, '0');
+    const minutes = String(date.getMinutes()).padStart(2, '0');
+    return `${hours}:${minutes}`;
 };
 
-const formatDayTitle = (day: ItineraryDay) => {
+const getWeekdayLabel = (date: Date, labels: string[]) => {
+    const index = date.getDay();
+    return labels[index] ?? '';
+};
+
+const formatDayTitle = (day: ItineraryDay, labels: string[]) => {
     const date = new Date(day.date);
     const month = String(date.getMonth() + 1).padStart(2, '0');
     const dayOfMonth = String(date.getDate()).padStart(2, '0');
-    return `${month}/${dayOfMonth} ${day.weekday}`;
+    const weekday = getWeekdayLabel(date, labels);
+    return `${month}/${dayOfMonth} ${weekday}`;
 };
 
 const getDefaultSelectionId = (day: ItineraryDay) => {
     const now = new Date();
-    const nowMinutes = now.getHours() * 60 + now.getMinutes();
     const startedWithMemo = day.items.filter((item) => {
-        const itemMinutes = toMinutes(item.startTime);
-        return (
-            itemMinutes !== null &&
-            itemMinutes <= nowMinutes &&
-            Boolean(item.memo)
-        );
+        const itemDate = new Date(item.startTime);
+        return itemDate <= now && Boolean(item.memo);
     });
 
     if (startedWithMemo.length === 0) return null;
@@ -89,29 +92,45 @@ const getDefaultSelectionId = (day: ItineraryDay) => {
 };
 
 const formatTimeRange = (item: ItineraryItem) => {
-    if (!item.endTime) return item.startTime;
-    return `${item.startTime} - ${item.endTime}`;
+    const startTime = formatTime(item.startTime);
+    const endTime = formatTime(item.endTime ?? null);
+    if (!endTime) return startTime;
+    return `${startTime} - ${endTime}`;
 };
 
-export default function ItineraryTimeline({ messages }: Props) {
-    const days = useMemo(() => messages?.data?.days ?? [], [messages]);
+export default function ItineraryTimeline({ messages, days }: Props) {
+    const weekdayLabels = useMemo(
+        () => messages?.labels?.weekdays ?? [],
+        [messages]
+    );
+    const hasDays = days.length > 0;
     const [selectedDayIndex, setSelectedDayIndex] = useState(0);
-    const [selectedItemId, setSelectedItemId] = useState<string | null>(null);
+    const [selectedItemId, setSelectedItemId] = useState<number | null>(null);
 
     useEffect(() => {
-        if (days.length === 0) return;
+        if (!hasDays) {
+            setSelectedItemId(null);
+            setSelectedDayIndex(0);
+            return;
+        }
+        if (selectedDayIndex > days.length - 1) {
+            setSelectedDayIndex(0);
+            return;
+        }
         setSelectedItemId(getDefaultSelectionId(days[selectedDayIndex]));
-    }, [days, selectedDayIndex]);
+    }, [days, hasDays, selectedDayIndex]);
 
     const selectedDay = days[selectedDayIndex];
     const items = selectedDay?.items ?? [];
     const selectedItem = items.find((item) => item.id === selectedItemId);
 
     const handlePrevDay = () => {
+        if (!hasDays) return;
         setSelectedDayIndex((prev) => Math.max(prev - 1, 0));
     };
 
     const handleNextDay = () => {
+        if (!hasDays) return;
         setSelectedDayIndex((prev) => Math.min(prev + 1, days.length - 1));
     };
 
@@ -125,7 +144,7 @@ export default function ItineraryTimeline({ messages }: Props) {
                         className={styles.dayButton}
                         onClick={handlePrevDay}
                         aria-label={messages.aria.prevDay}
-                        disabled={selectedDayIndex === 0}
+                        disabled={!hasDays || selectedDayIndex === 0}
                     >
                         <i
                             className={`ri-arrow-left-s-line ${styles.icon}`}
@@ -139,15 +158,20 @@ export default function ItineraryTimeline({ messages }: Props) {
                         <select
                             className={styles.daySelect}
                             value={selectedDayIndex}
+                            disabled={!hasDays}
                             onChange={(event) =>
                                 setSelectedDayIndex(Number(event.target.value))
                             }
                         >
-                            {days.map((day, index) => (
-                                <option key={day.id} value={index}>
-                                    {formatDayTitle(day)}
-                                </option>
-                            ))}
+                            {hasDays ? (
+                                days.map((day, index) => (
+                                    <option key={day.id} value={index}>
+                                        {formatDayTitle(day, weekdayLabels)}
+                                    </option>
+                                ))
+                            ) : (
+                                <option value={0}>—</option>
+                            )}
                         </select>
                     </label>
                     <button
@@ -155,7 +179,7 @@ export default function ItineraryTimeline({ messages }: Props) {
                         className={styles.dayButton}
                         onClick={handleNextDay}
                         aria-label={messages.aria.nextDay}
-                        disabled={selectedDayIndex === days.length - 1}
+                        disabled={!hasDays || selectedDayIndex === days.length - 1}
                     >
                         <i
                             className={`ri-arrow-right-s-line ${styles.icon}`}

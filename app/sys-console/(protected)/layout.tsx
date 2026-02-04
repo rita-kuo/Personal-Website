@@ -23,6 +23,7 @@ export default async function ProtectedLayout({
     const t = {
         title: (messages as any).title || 'Management Platform',
         game: (messages as any).menu?.game || 'Game Management',
+        itinerary: (messages as any).menu?.itinerary || 'Itinerary Management',
         logout: (messages as any).user?.logout || 'Logout',
     };
 

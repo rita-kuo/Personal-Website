@@ -21,7 +21,8 @@
             "emptyDay": "今日沒有行程",
             "emptySelection": "請選擇有備註的行程以查看詳細內容",
             "noLinks": "尚無連結",
-            "notAvailable": "無"
+            "notAvailable": "無",
+            "weekdays": ["週日", "週一", "週二", "週三", "週四", "週五", "週六"]
         },
         "aria": {
             "prevDay": "前一天",
@@ -29,94 +30,6 @@
             "location": "開啟地點連結",
             "parking": "開啟停車連結",
             "contact": "開啟聯絡連結"
-        },
-        "data": {
-            "days": [
-                {
-                    "id": "day-2026-02-04",
-                    "date": "2026-02-04",
-                    "weekday": "TUE",
-                    "items": [
-                        {
-                            "id": "item-2026-02-04-1",
-                            "startTime": "07:30",
-                            "endTime": null,
-                            "title": "出發",
-                            "location": null,
-                            "parking": null,
-                            "contact": null,
-                            "memo": null
-                        },
-                        {
-                            "id": "item-2026-02-04-2",
-                            "startTime": "08:15",
-                            "endTime": "09:30",
-                            "title": "早餐：Lumi 咖啡",
-                            "location": "https://maps.app.goo.gl/3qkP8G9x3B",
-                            "parking": null,
-                            "contact": "https://example.com/message",
-                            "memo": "早點到可選窗邊位。\n推薦季節限定拿鐵。"
-                        },
-                        {
-                            "id": "item-2026-02-04-3",
-                            "startTime": "10:00",
-                            "endTime": "12:00",
-                            "title": "城市博物館",
-                            "location": "https://maps.app.goo.gl/4wYy9K2N1A",
-                            "parking": "https://example.com/parking",
-                            "contact": null,
-                            "memo": "門口取票入場。\n重點看現代藝術館。"
-                        },
-                        {
-                            "id": "item-2026-02-04-4",
-                            "startTime": "18:00",
-                            "endTime": "20:00",
-                            "title": "夜市散步",
-                            "location": "https://maps.app.goo.gl/8yE1c2Lz7K",
-                            "parking": null,
-                            "contact": null,
-                            "memo": "燈籠門口集合。\n必吃在地小籠包。"
-                        }
-                    ]
-                },
-                {
-                    "id": "day-2026-02-05",
-                    "date": "2026-02-05",
-                    "weekday": "WED",
-                    "items": [
-                        {
-                            "id": "item-2026-02-05-1",
-                            "startTime": "09:00",
-                            "endTime": null,
-                            "title": "出發",
-                            "location": null,
-                            "parking": null,
-                            "contact": null,
-                            "memo": null
-                        },
-                        {
-                            "id": "item-2026-02-05-2",
-                            "startTime": "10:00",
-                            "endTime": "12:30",
-                            "title": "湖畔公園",
-                            "location": "https://maps.app.goo.gl/9wVt5J1QaX",
-                            "parking": "https://example.com/lake-parking",
-                            "contact": null,
-                            "memo": "記得帶薄外套。\n租船在東側碼頭。"
-                        },
-                        {
-                            "id": "item-2026-02-05-3",
-                            "startTime": "14:00",
-                            "endTime": "16:00",
-                            "title": "市集咖啡館",
-                            "location": "https://maps.app.goo.gl/2rS8K4pLmN",
-                            "parking": null,
-                            "contact": "https://example.com/contact",
-                            "memo": "幫大家訂四人位。\n點招牌厚片。"
-                        }
-                    ]
-                }
-            ]
         }
     },
     "auth": {
@@ -128,7 +41,8 @@
     "sys": {
         "title": "管理平台",
         "menu": {
-            "game": "遊戲管理"
+            "game": "遊戲管理",
+            "itinerary": "行程管理"
         },
         "user": {
             "logout": "登出"
@@ -156,6 +70,26 @@
                 "next": "下一頁"
             }
         },
+        "itineraryList": {
+            "title": "行程管理",
+            "empty": "尚無行程資料。",
+            "add": "新增行程",
+            "departureTitle": "出發",
+            "list": {
+                "startDate": "開始",
+                "endDate": "結束"
+            },
+            "modal": {
+                "title": "新增行程",
+                "nameLabel": "行程名稱",
+                "cancel": "取消",
+                "create": "建立",
+                "creating": "建立中..."
+            },
+            "validation": {
+                "required": "此欄位為必填"
+            }
+        },
         "itinerary": {
             "title": "行程管理",
             "daySwitch": {
@@ -177,7 +111,8 @@
                 "saving": "儲存中...",
                 "addItem": "新增行程",
                 "emptySelection": "請選擇要編輯的行程",
-                "emptyDay": "今日沒有行程"
+                "emptyDay": "今日沒有行程",
+                "weekdays": ["週日", "週一", "週二", "週三", "週四", "週五", "週六"]
             },
             "validation": {
                 "required": "此欄位為必填",

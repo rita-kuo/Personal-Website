@@ -58,6 +58,45 @@ model Config {
   updatedAt DateTime @default(now()) @updatedAt
 }
 
+model ItineraryTrip {
+  id        Int            @id @default(autoincrement())
+  title     String
+  slug      String         @unique
+  days      ItineraryDay[]
+  createdAt DateTime       @default(now())
+  updatedAt DateTime       @default(now()) @updatedAt
+}
+
+model ItineraryDay {
+  id        Int             @id @default(autoincrement())
+  trip      ItineraryTrip   @relation(fields: [tripId], references: [id], onDelete: Cascade)
+  tripId    Int
+  date      DateTime
+  items     ItineraryItem[]
+  createdAt DateTime        @default(now())
+  updatedAt DateTime        @default(now()) @updatedAt
+
+  @@index([tripId])
+  @@unique([tripId, date])
+}
+
+model ItineraryItem {
+  id        Int          @id @default(autoincrement())
+  day       ItineraryDay @relation(fields: [dayId], references: [id], onDelete: Cascade)
+  dayId     Int
+  title     String
+  startTime DateTime
+  endTime   DateTime?
+  location  String?
+  parking   String?
+  contact   String?
+  memo      String?
+  createdAt DateTime     @default(now())
+  updatedAt DateTime     @default(now()) @updatedAt
+
+  @@index([dayId])
+}
+
 model User {
   id            Int       @id @default(autoincrement())
   name          String?

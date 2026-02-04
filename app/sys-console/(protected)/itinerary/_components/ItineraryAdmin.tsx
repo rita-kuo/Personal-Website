@@ -3,9 +3,10 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import styles from '../itinerary.module.css';
+import { addItineraryItem, updateItineraryItem } from '@/app/sys-console/(protected)/itinerary/actions';
 
 type ItineraryItem = {
-    id: string;
+    id: number;
     startTime: string;
     endTime?: string | null;
     title: string;
@@ -16,9 +17,8 @@ type ItineraryItem = {
 };
 
 type ItineraryDay = {
-    id: string;
+    id: number;
     date: string;
-    weekday: string;
     items: ItineraryItem[];
 };
 
@@ -46,6 +46,7 @@ type AdminMessages = {
                 addItem: string;
                 emptySelection: string;
                 emptyDay: string;
+                weekdays: string[];
             };
             validation: {
                 required: string;
@@ -53,11 +54,6 @@ type AdminMessages = {
                 endBeforeStart: string;
                 tooLong: string;
             };
-        };
-    };
-    itinerary: {
-        data: {
-            days: ItineraryDay[];
         };
     };
 };
@@ -72,26 +68,32 @@ type FormValues = {
     memo: string;
 };
 
-const toMinutes = (time: string | null | undefined) => {
-    if (!time) return null;
-    const [hours, minutes] = time.split(':').map(Number);
-    if (Number.isNaN(hours) || Number.isNaN(minutes)) return null;
-    return hours * 60 + minutes;
+const formatTime = (value: string | null | undefined) => {
+    if (!value) return '';
+    const date = new Date(value);
+    const hours = String(date.getHours()).padStart(2, '0');
+    const minutes = String(date.getMinutes()).padStart(2, '0');
+    return `${hours}:${minutes}`;
 };
 
-const formatDayTitle = (day: ItineraryDay) => {
+const getWeekdayLabel = (date: Date, labels: string[]) => {
+    const index = date.getDay();
+    return labels[index] ?? '';
+};
+
+const formatDayTitle = (day: ItineraryDay, labels: string[]) => {
     const date = new Date(day.date);
     const month = String(date.getMonth() + 1).padStart(2, '0');
     const dayOfMonth = String(date.getDate()).padStart(2, '0');
-    return `${month}/${dayOfMonth} ${day.weekday}`;
+    const weekday = getWeekdayLabel(date, labels);
+    return `${month}/${dayOfMonth} ${weekday}`;
 };
 
 const getDefaultSelectionId = (day: ItineraryDay) => {
     const now = new Date();
-    const nowMinutes = now.getHours() * 60 + now.getMinutes();
     const started = day.items.filter((item) => {
-        const itemMinutes = toMinutes(item.startTime);
-        return itemMinutes !== null && itemMinutes <= nowMinutes;
+        const itemDate = new Date(item.startTime);
+        return itemDate <= now;
     });
 
     if (started.length === 0) return null;
@@ -101,30 +103,20 @@ const getDefaultSelectionId = (day: ItineraryDay) => {
 const isValidUrl = (value: string) =>
     value.length === 0 || /^https?:\/\//.test(value);
 
-const addMinutesToTime = (time: string | null | undefined, delta: number) => {
-    const minutes = toMinutes(time);
-    if (minutes === null) return time ?? '';
-    const total = Math.min(Math.max(minutes + delta, 0), 23 * 60 + 59);
-    const hours = Math.floor(total / 60);
-    const mins = total % 60;
-    return `${String(hours).padStart(2, '0')}:${String(mins).padStart(2, '0')}`;
-};
-
 export default function ItineraryAdmin({
     messages,
+    days: initialDays,
 }: {
     messages: AdminMessages;
+    days: ItineraryDay[];
 }) {
     const t = messages.sys.itinerary;
-    const initialDays = useMemo(
-        () => messages.itinerary?.data?.days ?? [],
-        [messages]
-    );
-
     const [days, setDays] = useState<ItineraryDay[]>(initialDays);
     const [selectedDayIndex, setSelectedDayIndex] = useState(0);
-    const [selectedItemId, setSelectedItemId] = useState<string | null>(null);
+    const [selectedItemId, setSelectedItemId] = useState<number | null>(null);
     const [isSaving, setIsSaving] = useState(false);
+
+    const hasDays = days.length > 0;
 
     const selectedDay = days[selectedDayIndex];
     const items = selectedDay?.items ?? [];
@@ -133,10 +125,20 @@ export default function ItineraryAdmin({
         (item) => item.id === selectedItemId
     );
 
+    const weekdayLabels = useMemo(() => t.labels.weekdays ?? [], [t.labels]);
+
     useEffect(() => {
-        if (days.length === 0) return;
+        if (!hasDays) {
+            setSelectedItemId(null);
+            setSelectedDayIndex(0);
+            return;
+        }
+        if (selectedDayIndex > days.length - 1) {
+            setSelectedDayIndex(0);
+            return;
+        }
         setSelectedItemId(getDefaultSelectionId(days[selectedDayIndex]));
-    }, [days, selectedDayIndex]);
+    }, [days, hasDays, selectedDayIndex]);
 
     const form = useForm<FormValues>({
         defaultValues: {
@@ -162,8 +164,8 @@ export default function ItineraryAdmin({
         if (!selectedItem) return;
         reset({
             title: selectedItem.title ?? '',
-            startTime: selectedItem.startTime ?? '',
-            endTime: selectedItem.endTime ?? '',
+            startTime: formatTime(selectedItem.startTime) ?? '',
+            endTime: formatTime(selectedItem.endTime ?? null) ?? '',
             location: selectedItem.location ?? '',
             parking: selectedItem.parking ?? '',
             contact: selectedItem.contact ?? '',
@@ -171,83 +173,46 @@ export default function ItineraryAdmin({
         });
     }, [reset, selectedItem]);
 
-    const onSubmit = handleSubmit((values) => {
-        if (!selectedDay || !selectedItemId) return;
-        if (selectedItemIndex < 0) return;
+    const onSubmit = handleSubmit(async (values) => {
+        if (!selectedDay || selectedItemIndex < 0 || !selectedItemId) return;
         setIsSaving(true);
-        const oldEnd = selectedItem?.endTime ?? null;
-        const newEnd = values.endTime || null;
-        const oldEndMinutes = toMinutes(oldEnd);
-        const newEndMinutes = toMinutes(newEnd);
-        const deltaMinutes =
-            oldEndMinutes !== null && newEndMinutes !== null
-                ? newEndMinutes - oldEndMinutes
-                : 0;
 
-        setDays((prev) =>
-            prev.map((day, dayIndex) => {
-                if (dayIndex !== selectedDayIndex) return day;
-                return {
-                    ...day,
-                    items: day.items.map((item, index) => {
-                        if (item.id === selectedItemId) {
-                            return {
-                                ...item,
-                                title: values.title,
-                                startTime: values.startTime,
-                                endTime: values.endTime || null,
-                                location: values.location || null,
-                                parking: values.parking || null,
-                                contact: values.contact || null,
-                                memo: values.memo || null,
-                            };
-                        }
+        const updatedDay = await updateItineraryItem({
+            dayId: selectedDay.id,
+            itemId: selectedItemId,
+            title: values.title,
+            startTime: values.startTime,
+            endTime: values.endTime,
+            location: values.location,
+            parking: values.parking,
+            contact: values.contact,
+            memo: values.memo,
+        });
 
-                        if (deltaMinutes !== 0 && index > selectedItemIndex) {
-                            return {
-                                ...item,
-                                startTime: addMinutesToTime(
-                                    item.startTime,
-                                    deltaMinutes
-                                ),
-                                endTime: item.endTime
-                                    ? addMinutesToTime(
-                                          item.endTime,
-                                          deltaMinutes
-                                      )
-                                    : null,
-                            };
-                        }
+        if (updatedDay) {
+            setDays((prev) =>
+                prev.map((day) => (day.id === updatedDay.id ? updatedDay : day))
+            );
+        }
 
-                        return item;
-                    }),
-                };
-            })
-        );
-        setTimeout(() => setIsSaving(false), 400);
+        setIsSaving(false);
     });
 
-    const handleAddItem = () => {
+    const handleAddItem = async () => {
         if (!selectedDay) return;
-        const newItem: ItineraryItem = {
-            id: `temp-${Date.now()}`,
-            startTime: '',
-            endTime: '',
-            title: '',
-            location: '',
-            parking: '',
-            contact: '',
-            memo: '',
-        };
+        const updatedDay = await addItineraryItem({
+            dayId: selectedDay.id,
+        });
 
-        setDays((prev) =>
-            prev.map((day, index) =>
-                index === selectedDayIndex
-                    ? { ...day, items: [...day.items, newItem] }
-                    : day
-            )
-        );
-        setSelectedItemId(newItem.id);
+        if (updatedDay) {
+            setDays((prev) =>
+                prev.map((day) => (day.id === updatedDay.id ? updatedDay : day))
+            );
+            const newestItem = updatedDay.items[updatedDay.items.length - 1];
+            if (newestItem) {
+                setSelectedItemId(newestItem.id);
+            }
+        }
     };
 
     return (
@@ -262,7 +227,7 @@ export default function ItineraryAdmin({
                             setSelectedDayIndex((prev) => Math.max(prev - 1, 0))
                         }
                         aria-label={t.daySwitch.prev}
-                        disabled={selectedDayIndex === 0}
+                        disabled={!hasDays || selectedDayIndex === 0}
                     >
                         <i
                             className={`ri-arrow-left-s-line ${styles.icon}`}
@@ -276,15 +241,20 @@ export default function ItineraryAdmin({
                         <select
                             className={styles.daySelect}
                             value={selectedDayIndex}
+                            disabled={!hasDays}
                             onChange={(event) =>
                                 setSelectedDayIndex(Number(event.target.value))
                             }
                         >
-                            {days.map((day, index) => (
-                                <option key={day.id} value={index}>
-                                    {formatDayTitle(day)}
-                                </option>
-                            ))}
+                            {hasDays ? (
+                                days.map((day, index) => (
+                                    <option key={day.id} value={index}>
+                                        {formatDayTitle(day, weekdayLabels)}
+                                    </option>
+                                ))
+                            ) : (
+                                <option value={0}>—</option>
+                            )}
                         </select>
                     </label>
                     <button
@@ -296,7 +266,7 @@ export default function ItineraryAdmin({
                             )
                         }
                         aria-label={t.daySwitch.next}
-                        disabled={selectedDayIndex === days.length - 1}
+                        disabled={!hasDays || selectedDayIndex === days.length - 1}
                     >
                         <i
                             className={`ri-arrow-right-s-line ${styles.icon}`}
@@ -333,10 +303,7 @@ export default function ItineraryAdmin({
                             className={`${styles.timelineList} ${styles.compactList}`}
                         >
                             {items.map((item, index) => (
-                                <li
-                                    key={item.id}
-                                    className={styles.timelineItem}
-                                >
+                                <li key={item.id} className={styles.timelineItem}>
                                     <button
                                         type='button'
                                         className={`${styles.compactButton} ${
@@ -349,12 +316,12 @@ export default function ItineraryAdmin({
                                         }
                                     >
                                         <span className={styles.compactTitle}>
-                                            {item.title}
+                                            {item.title || t.labels.title}
                                         </span>
                                         <span className={styles.compactTime}>
-                                            {item.startTime}
+                                            {formatTime(item.startTime)}
                                             {item.endTime
-                                                ? ` - ${item.endTime}`
+                                                ? ` - ${formatTime(item.endTime)}`
                                                 : ''}
                                         </span>
                                     </button>
@@ -363,15 +330,11 @@ export default function ItineraryAdmin({
                                             className={styles.connectorCompact}
                                             aria-hidden='true'
                                         >
-                                            <span
-                                                className={styles.connectorLine}
-                                            />
+                                            <span className={styles.connectorLine} />
                                             <i
                                                 className={`ri-car-line ${styles.carIcon}`}
                                             />
-                                            <span
-                                                className={styles.connectorLine}
-                                            />
+                                            <span className={styles.connectorLine} />
                                         </div>
                                     )}
                                 </li>
@@ -379,9 +342,7 @@ export default function ItineraryAdmin({
                         </ol>
                     </div>
                     <div className={styles.detailColumn}>
-                        <article
-                            className={`${styles.card} ${styles.detailCard}`}
-                        >
+                        <article className={`${styles.card} ${styles.detailCard}`}>
                             <h2 className={styles.sectionTitle}>
                                 {t.labels.editor}
                             </h2>
@@ -390,10 +351,7 @@ export default function ItineraryAdmin({
                                     {t.labels.emptySelection}
                                 </p>
                             ) : (
-                                <form
-                                    className={styles.form}
-                                    onSubmit={onSubmit}
-                                >
+                                <form className={styles.form} onSubmit={onSubmit}>
                                     <label className={styles.formLabel}>
                                         {t.labels.title}
                                         <input
@@ -416,14 +374,11 @@ export default function ItineraryAdmin({
                                                 type='time'
                                                 className={styles.input}
                                                 {...register('startTime', {
-                                                    required:
-                                                        t.validation.required,
+                                                    required: t.validation.required,
                                                 })}
                                             />
                                             {errors.startTime && (
-                                                <span
-                                                    className={styles.errorText}
-                                                >
+                                                <span className={styles.errorText}>
                                                     {errors.startTime.message}
                                                 </span>
                                             )}
@@ -436,29 +391,16 @@ export default function ItineraryAdmin({
                                                 {...register('endTime', {
                                                     validate: (value) => {
                                                         if (!value) return true;
-                                                        const start = toMinutes(
-                                                            getValues(
-                                                                'startTime'
-                                                            )
-                                                        );
-                                                        const end =
-                                                            toMinutes(value);
-                                                        if (
-                                                            start !== null &&
-                                                            end !== null &&
-                                                            end < start
-                                                        ) {
-                                                            return t.validation
-                                                                .endBeforeStart;
+                                                        const start = getValues('startTime');
+                                                        if (start && value < start) {
+                                                            return t.validation.endBeforeStart;
                                                         }
                                                         return true;
                                                     },
                                                 })}
                                             />
                                             {errors.endTime && (
-                                                <span
-                                                    className={styles.errorText}
-                                                >
+                                                <span className={styles.errorText}>
                                                     {errors.endTime.message}
                                                 </span>
                                             )}
@@ -537,9 +479,7 @@ export default function ItineraryAdmin({
                                         className={styles.primaryButton}
                                         disabled={isSaving}
                                     >
-                                        {isSaving
-                                            ? t.labels.saving
-                                            : t.labels.save}
+                                        {isSaving ? t.labels.saving : t.labels.save}
                                     </button>
                                 </form>
                             )}
