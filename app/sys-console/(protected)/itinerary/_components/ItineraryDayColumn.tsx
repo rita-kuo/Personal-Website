@@ -25,8 +25,7 @@ type ItineraryDay = {
 
 type ItineraryMessages = {
     daySwitch: {
-        addPrev: string;
-        addNext: string;
+        addDay: string;
     };
     dayDeleteModal: {
         confirm: string;
@@ -103,11 +102,10 @@ export default function ItineraryDayColumn({
                                 type='button'
                                 className={styles.addDayButton}
                                 onClick={onAddDayBeforeFirst}
-                                aria-label={messages.daySwitch.addPrev}
+                                aria-label={messages.daySwitch.addDay}
                                 disabled={!hasDays}
                             >
                                 <i className='ri-add-line' aria-hidden='true' />
-                                {messages.daySwitch.addPrev}
                             </button>
                         </li>
                         {days.map((day, index) => (
@@ -130,11 +128,10 @@ export default function ItineraryDayColumn({
                                 type='button'
                                 className={styles.addDayButton}
                                 onClick={onAddDayAfterLast}
-                                aria-label={messages.daySwitch.addNext}
+                                aria-label={messages.daySwitch.addDay}
                                 disabled={!hasDays}
                             >
                                 <i className='ri-add-line' aria-hidden='true' />
-                                {messages.daySwitch.addNext}
                             </button>
                         </li>
                     </ol>

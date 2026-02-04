@@ -49,9 +49,8 @@ type AdminMessages = {
         daySwitch: {
             prev: string;
             next: string;
-            addPrev: string;
-            addNext: string;
             label: string;
+            addDay: string;
         };
         labels: {
             timeline: string;

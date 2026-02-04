@@ -95,8 +95,7 @@
             "daySwitch": {
                 "prev": "Previous day",
                 "next": "Next day",
-                "addPrev": "Add previous day",
-                "addNext": "Add next day",
+                "addDay": "Add a day",
                 "label": "Select a day"
             },
             "dayModal": {

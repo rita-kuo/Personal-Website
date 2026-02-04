@@ -64,8 +64,7 @@ export default function SortableDayItem({
             }`}
         >
             <div className={styles.daySortableRow}>
-                <button
-                    type='button'
+                <div
                     className={`${styles.daySelectButton} ${
                         isSelected ? styles.isSelected : ''
                     }`}
@@ -89,7 +88,7 @@ export default function SortableDayItem({
                     >
                         <i className='ri-close-line' aria-hidden='true' />
                     </button>
-                </button>
+                </div>
             </div>
         </li>
     );
