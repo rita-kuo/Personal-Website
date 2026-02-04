@@ -106,6 +106,12 @@
                 "create": "建立",
                 "creating": "建立中..."
             },
+            "dayEditModal": {
+                "title": "更新日期",
+                "dateLabel": "日期",
+                "cancel": "取消",
+                "save": "更新"
+            },
             "dayDeleteModal": {
                 "title": "刪除此天？",
                 "body": "此動作會刪除此天與相關行程項目。",

@@ -11,6 +11,7 @@ import ItineraryItemEditor from './ItineraryItemEditor';
 import ItineraryListItem from './ItineraryListItem';
 import EditTripModal from './EditTripModal';
 import ItineraryDayColumn from './ItineraryDayColumn';
+import EditDayDateModal from './EditDayDateModal';
 import ConfirmModal from '@/app/sys-console/_components/ConfirmModal';
 import {
     addItineraryItem,
@@ -20,6 +21,8 @@ import {
     deleteItineraryDay,
     deleteItineraryTrip,
     reorderItineraryDays,
+    updateItineraryDayDate,
+    updateItineraryTripMeta,
     saveItineraryTrip,
 } from '@/app/sys-console/(protected)/itinerary/actions';
 
@@ -97,6 +100,12 @@ type AdminMessages = {
             cancel: string;
             create: string;
             creating: string;
+        };
+        dayEditModal: {
+            title: string;
+            dateLabel: string;
+            cancel: string;
+            save: string;
         };
         itemDeleteModal: {
             title: string;
@@ -193,13 +202,14 @@ export default function ItineraryAdmin({
     const [selectedItemId, setSelectedItemId] = useState<number | null>(null);
     const [tripTitle, setTripTitle] = useState(initialTripTitle);
     const [tripSlug, setTripSlug] = useState(initialTripSlug);
-    const [isTripDirty, setIsTripDirty] = useState(false);
+    const [isItemsDirty, setIsItemsDirty] = useState(false);
     const [isSavingTrip, setIsSavingTrip] = useState(false);
     const [tripSaveError, setTripSaveError] = useState('');
     const [isEditTripModalOpen, setIsEditTripModalOpen] = useState(false);
     const [isDeleteTripModalOpen, setIsDeleteTripModalOpen] = useState(false);
     const [isDeletingTrip, setIsDeletingTrip] = useState(false);
     const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+    const [isEditDayModalOpen, setIsEditDayModalOpen] = useState(false);
     const [isDeleting, setIsDeleting] = useState(false);
     const [deleteDayTargetId, setDeleteDayTargetId] = useState<number | null>(
         null,
@@ -278,14 +288,14 @@ export default function ItineraryAdmin({
                     return { ...day, items: sorted };
                 }),
             );
-            setIsTripDirty(true);
+            setIsItemsDirty(true);
             setTripSaveError('');
         },
         [selectedDay, selectedItemId],
     );
 
-    const handleSaveTrip = useCallback(async () => {
-        if (!isTripDirty) return;
+    const handleSaveItems = useCallback(async () => {
+        if (!isItemsDirty) return;
         setIsSavingTrip(true);
         setTripSaveError('');
 
@@ -311,9 +321,9 @@ export default function ItineraryAdmin({
             setDays(result.trip.days ?? []);
             setTripTitle(result.trip.title);
             setTripSlug(result.trip.slug);
-            setIsTripDirty(false);
+            setIsItemsDirty(false);
         }
-    }, [days, isTripDirty, tripId, tripSlug, tripTitle, t.validation]);
+    }, [days, isItemsDirty, tripId, tripSlug, tripTitle, t.validation]);
 
     const handleInsertItem = async (afterItemId: number) => {
         if (!selectedDay) return;
@@ -328,7 +338,6 @@ export default function ItineraryAdmin({
                     day.id === updatedDay.id ? updatedDay : day,
                 ),
             );
-            setIsTripDirty(true);
             const newestItem = updatedDay.items[updatedDay.items.length - 1];
             if (newestItem) {
                 setSelectedItemId(newestItem.id);
@@ -348,7 +357,6 @@ export default function ItineraryAdmin({
                     day.id === updatedDay.id ? updatedDay : day,
                 ),
             );
-            setIsTripDirty(true);
             const newestItem = updatedDay.items[updatedDay.items.length - 1];
             if (newestItem) {
                 setSelectedItemId(newestItem.id);
@@ -365,7 +373,6 @@ export default function ItineraryAdmin({
         if (result?.days) {
             setDays(result.days);
             setSelectedDayIndex(0);
-            setIsTripDirty(true);
         }
     };
 
@@ -382,7 +389,6 @@ export default function ItineraryAdmin({
         if (result?.days) {
             setDays(result.days);
             setSelectedDayIndex(0);
-            setIsTripDirty(true);
         }
     };
 
@@ -395,7 +401,6 @@ export default function ItineraryAdmin({
         if (result?.days) {
             setDays(result.days);
             setSelectedDayIndex(result.days.length - 1);
-            setIsTripDirty(true);
         }
     };
 
@@ -414,14 +419,43 @@ export default function ItineraryAdmin({
         setIsEditTripModalOpen(true);
     };
 
+    const openEditDayModal = () => {
+        if (!selectedDay) return;
+        setIsEditDayModalOpen(true);
+    };
+
     const closeEditTripModal = () => {
         setIsEditTripModalOpen(false);
     };
-    const handleTripMetaSave = (nextTitle: string, nextSlug: string) => {
-        setTripTitle(nextTitle);
-        setTripSlug(nextSlug);
-        setIsTripDirty(true);
+
+    const closeEditDayModal = () => {
+        setIsEditDayModalOpen(false);
+    };
+    const handleTripMetaSave = async (nextTitle: string, nextSlug: string) => {
+        setIsSavingTrip(true);
         setTripSaveError('');
+
+        const result = await updateItineraryTripMeta({
+            tripId,
+            title: nextTitle,
+            slug: nextSlug,
+        });
+
+        setIsSavingTrip(false);
+
+        if (result?.error) {
+            if (result.error === 'SLUG_EXISTS') {
+                setTripSaveError(t.validation.slugDuplicate);
+            } else {
+                setTripSaveError(t.validation.saveFailed);
+            }
+            return;
+        }
+
+        if (result?.trip) {
+            setTripTitle(result.trip.title);
+            setTripSlug(result.trip.slug);
+        }
     };
 
     const openDeleteTripModal = () => {
@@ -461,7 +495,6 @@ export default function ItineraryAdmin({
                 ? Math.min(deleteDayTargetIndex, result.days.length - 1)
                 : 0;
             setSelectedDayIndex(nextIndex);
-            setIsTripDirty(true);
             closeDeleteModal();
         }
     };
@@ -481,7 +514,6 @@ export default function ItineraryAdmin({
                     day.id === updatedDay.id ? updatedDay : day,
                 ),
             );
-            setIsTripDirty(true);
             if (updatedDay.items.length === 0) {
                 setSelectedItemId(null);
             } else {
@@ -505,6 +537,23 @@ export default function ItineraryAdmin({
         }
     };
 
+    const handleUpdateDayDate = async (nextDate: string) => {
+        if (!selectedDay) return;
+        const result = await updateItineraryDayDate({
+            tripId,
+            dayId: selectedDay.id,
+            date: nextDate,
+        });
+
+        if (result?.days) {
+            setDays(result.days);
+            const nextIndex = result.days.findIndex(
+                (day) => day.id === selectedDay.id,
+            );
+            setSelectedDayIndex(nextIndex >= 0 ? nextIndex : 0);
+        }
+    };
+
     useEffect(() => {
         const handler = (event: KeyboardEvent) => {
             if (
@@ -512,15 +561,15 @@ export default function ItineraryAdmin({
                 event.key.toLowerCase() === 's'
             ) {
                 event.preventDefault();
-                if (isTripDirty) {
-                    handleSaveTrip();
+                if (isItemsDirty) {
+                    handleSaveItems();
                 }
             }
         };
 
         window.addEventListener('keydown', handler);
         return () => window.removeEventListener('keydown', handler);
-    }, [handleSaveTrip, isTripDirty]);
+    }, [handleSaveItems, isItemsDirty]);
 
     const handleDayDragEnd = async (event: DragEndEvent) => {
         const { active, over } = event;
@@ -545,7 +594,6 @@ export default function ItineraryAdmin({
                 );
                 setSelectedDayIndex(nextIndex >= 0 ? nextIndex : 0);
             }
-            setIsTripDirty(true);
         }
     };
     return (
@@ -553,14 +601,9 @@ export default function ItineraryAdmin({
             <ItineraryHeader
                 title={tripTitle || t.title}
                 editLabel={t.labels.editTrip}
-                saveLabel={t.labels.saveTrip}
-                savingLabel={t.labels.savingTrip}
                 deleteLabel={t.labels.deleteTrip}
-                isSaving={isSavingTrip}
-                isDirty={isTripDirty}
                 errorText={tripSaveError}
                 onEdit={openEditTripModal}
-                onSave={handleSaveTrip}
                 onDelete={openDeleteTripModal}
             />
             <div className={styles.contentArea}>
@@ -590,6 +633,18 @@ export default function ItineraryAdmin({
                                         ? `${formatDayTitle(selectedDay, weekdayLabels)} ${t.labels.timeline}`
                                         : t.labels.timeline}
                                 </h2>
+                                <button
+                                    type='button'
+                                    className={styles.iconButton}
+                                    onClick={openEditDayModal}
+                                    aria-label={t.dayEditModal.title}
+                                    disabled={!selectedDay}
+                                >
+                                    <i
+                                        className='ri-pencil-line'
+                                        aria-hidden='true'
+                                    />
+                                </button>
                             </div>
                             <ol
                                 className={`${styles.timelineList} ${styles.compactList}`}
@@ -646,6 +701,10 @@ export default function ItineraryAdmin({
                                     t={t}
                                     selectedItem={selectedItem}
                                     selectedDay={selectedDay}
+                                    isDirty={isItemsDirty}
+                                    isSaving={isSavingTrip}
+                                    errorText={tripSaveError}
+                                    onSave={handleSaveItems}
                                     onDelete={openDeleteItemModal}
                                     updateSelectedItem={updateSelectedItem}
                                 />
@@ -675,6 +734,24 @@ export default function ItineraryAdmin({
                 isConfirming={isDeleting}
                 onCancel={closeDeleteModal}
                 onConfirm={handleDeleteDay}
+            />
+            <EditDayDateModal
+                isOpen={isEditDayModalOpen}
+                date={
+                    selectedDay
+                        ? formatDateInput(new Date(selectedDay.date))
+                        : ''
+                }
+                labels={{
+                    title: t.dayEditModal.title,
+                    dateLabel: t.dayEditModal.dateLabel,
+                    cancel: t.dayEditModal.cancel,
+                    save: t.dayEditModal.save,
+                }}
+                requiredMessage={t.validation.required}
+                invalidMessage={t.validation.dateInvalid}
+                onClose={closeEditDayModal}
+                onSave={handleUpdateDayDate}
             />
             <EditTripModal
                 isOpen={isEditTripModalOpen}

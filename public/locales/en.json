@@ -106,6 +106,12 @@
                 "create": "Create",
                 "creating": "Creating..."
             },
+            "dayEditModal": {
+                "title": "Edit day date",
+                "dateLabel": "Date",
+                "cancel": "Cancel",
+                "save": "Update"
+            },
             "dayDeleteModal": {
                 "title": "Delete this day?",
                 "body": "This will delete the selected day and its items.",

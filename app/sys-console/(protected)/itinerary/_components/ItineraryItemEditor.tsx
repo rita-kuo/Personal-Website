@@ -41,6 +41,8 @@ type ItineraryItemEditorProps = {
             memo: string;
             deleteItem: string;
             emptySelection: string;
+            saveTrip: string;
+            savingTrip: string;
         };
         validation: {
             required: string;
@@ -51,6 +53,10 @@ type ItineraryItemEditorProps = {
     };
     selectedItem: ItineraryItem | undefined;
     selectedDay: ItineraryDay | undefined;
+    isDirty: boolean;
+    isSaving: boolean;
+    errorText?: string;
+    onSave: () => void;
     onDelete: () => void;
     updateSelectedItem: (updates: Partial<ItineraryItem>) => void;
 };
@@ -70,6 +76,10 @@ export default function ItineraryItemEditor({
     t,
     selectedItem,
     selectedDay,
+    isDirty,
+    isSaving,
+    errorText,
+    onSave,
     onDelete,
     updateSelectedItem,
 }: ItineraryItemEditorProps) {
@@ -83,15 +93,26 @@ export default function ItineraryItemEditor({
         <article className={`${styles.card} ${styles.detailCard}`}>
             <div className={styles.detailHeader}>
                 <h2 className={styles.sectionTitle}>{t.labels.editor}</h2>
-                <button
-                    type='button'
-                    className={styles.secondaryButton}
-                    onClick={onDelete}
-                    disabled={!selectedItem}
-                >
-                    {t.labels.deleteItem}
-                </button>
+                <div className={styles.headerActions}>
+                    <button
+                        type='button'
+                        className={styles.primaryButton}
+                        onClick={onSave}
+                        disabled={!isDirty || isSaving}
+                    >
+                        {isSaving ? t.labels.savingTrip : t.labels.saveTrip}
+                    </button>
+                    <button
+                        type='button'
+                        className={styles.secondaryButton}
+                        onClick={onDelete}
+                        disabled={!selectedItem}
+                    >
+                        {t.labels.deleteItem}
+                    </button>
+                </div>
             </div>
+            {errorText && <p className={styles.errorText}>{errorText}</p>}
             {!selectedItem ? (
                 <p className={styles.emptyText}>{t.labels.emptySelection}</p>
             ) : (

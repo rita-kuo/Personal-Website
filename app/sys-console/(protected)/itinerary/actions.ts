@@ -59,6 +59,21 @@ type SaveTripResult = {
     error?: 'TRIP_NOT_FOUND' | 'SLUG_EXISTS' | 'SAVE_FAILED';
 };
 
+type UpdateTripMetaPayload = {
+    tripId: number;
+    title: string;
+    slug: string;
+};
+
+type UpdateTripMetaResult = {
+    trip?: {
+        id: number;
+        title: string;
+        slug: string;
+    };
+    error?: 'TRIP_NOT_FOUND' | 'SLUG_EXISTS' | 'SAVE_FAILED';
+};
+
 type DeleteTripPayload = {
     tripId: number;
 };
@@ -116,6 +131,17 @@ type AddDayAfterResult = {
     days?: CreateDayResult['days'];
     newDayId?: number;
     error?: 'TRIP_NOT_FOUND' | 'DAY_NOT_FOUND';
+};
+
+type UpdateDayDatePayload = {
+    tripId: number;
+    dayId: number;
+    date: string;
+};
+
+type UpdateDayDateResult = {
+    days?: CreateDayResult['days'];
+    error?: 'TRIP_NOT_FOUND' | 'DAY_NOT_FOUND' | 'INVALID_DATE';
 };
 
 type ReorderDayPayload = {
@@ -477,6 +503,42 @@ export async function saveItineraryTrip(
     }
 }
 
+export async function updateItineraryTripMeta(
+    payload: UpdateTripMetaPayload,
+): Promise<UpdateTripMetaResult> {
+    try {
+        const trip = await prisma.itineraryTrip.update({
+            where: { id: payload.tripId },
+            data: {
+                title: payload.title,
+                slug: payload.slug,
+            },
+        });
+
+        return {
+            trip: {
+                id: trip.id,
+                title: trip.title,
+                slug: trip.slug,
+            },
+        };
+    } catch (error) {
+        if (
+            error instanceof Prisma.PrismaClientKnownRequestError &&
+            error.code === 'P2002'
+        ) {
+            return { error: 'SLUG_EXISTS' };
+        }
+        if (
+            error instanceof Prisma.PrismaClientKnownRequestError &&
+            error.code === 'P2025'
+        ) {
+            return { error: 'TRIP_NOT_FOUND' };
+        }
+        return { error: 'SAVE_FAILED' };
+    }
+}
+
 export async function deleteItineraryTrip(
     payload: DeleteTripPayload,
 ): Promise<DeleteTripResult> {
@@ -774,6 +836,87 @@ export async function deleteItineraryDay(
 
     return {
         days: updatedTrip.days.map((dayItem) => serializeDay(dayItem)),
+    };
+}
+
+export async function updateItineraryDayDate(
+    payload: UpdateDayDatePayload,
+): Promise<UpdateDayDateResult> {
+    const targetDate = startOfDate(payload.date);
+    if (!targetDate) return { error: 'INVALID_DATE' };
+
+    const trip = await prisma.itineraryTrip.findUnique({
+        where: { id: payload.tripId },
+        include: {
+            days: {
+                orderBy: [{ date: 'asc' }],
+                include: {
+                    items: {
+                        orderBy: [{ startTime: 'asc' }],
+                    },
+                },
+            },
+        },
+    });
+
+    if (!trip) return { error: 'TRIP_NOT_FOUND' };
+
+    const targetDay = trip.days.find((day) => day.id === payload.dayId);
+    if (!targetDay) return { error: 'DAY_NOT_FOUND' };
+
+    const delta = diffDays(targetDate, targetDay.date);
+    if (delta === 0) {
+        return { days: trip.days.map((day) => serializeDay(day)) };
+    }
+
+    await prisma.$transaction(async (tx) => {
+        await Promise.all(
+            trip.days.map(async (day) => {
+                const nextDate = addDays(day.date, delta);
+                await tx.itineraryDay.update({
+                    where: { id: day.id },
+                    data: { date: nextDate },
+                });
+
+                if (day.items.length === 0) return;
+
+                await Promise.all(
+                    day.items.map((item) => {
+                        const shiftedStart = addDays(item.startTime, delta);
+                        const shiftedEnd = item.endTime
+                            ? addDays(item.endTime, delta)
+                            : null;
+                        return tx.itineraryItem.update({
+                            where: { id: item.id },
+                            data: {
+                                startTime: shiftedStart,
+                                endTime: shiftedEnd,
+                            },
+                        });
+                    }),
+                );
+            }),
+        );
+    });
+
+    const updatedTrip = await prisma.itineraryTrip.findUnique({
+        where: { id: payload.tripId },
+        include: {
+            days: {
+                orderBy: [{ date: 'asc' }],
+                include: {
+                    items: {
+                        orderBy: [{ startTime: 'asc' }],
+                    },
+                },
+            },
+        },
+    });
+
+    if (!updatedTrip) return { error: 'TRIP_NOT_FOUND' };
+
+    return {
+        days: updatedTrip.days.map((day) => serializeDay(day)),
     };
 }
 
