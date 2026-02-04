@@ -114,7 +114,9 @@ export default function ItineraryTripList({
                             className={styles.item}
                         >
                             <div className={styles.itemContent}>
-                                <h2 className={styles.itemName}>{trip.title}</h2>
+                                <h2 className={styles.itemName}>
+                                    {trip.title}
+                                </h2>
                                 <div className={styles.itemMeta}>
                                     <span>{t.list.startDate}</span>
                                     <span className={styles.metaValue}>
@@ -139,14 +141,19 @@ export default function ItineraryTripList({
                 <div className={modalStyles.backdrop}>
                     <div className={modalStyles.modal}>
                         <header className={modalStyles.header}>
-                            <h2 className={modalStyles.title}>{t.modal.title}</h2>
+                            <h2 className={modalStyles.title}>
+                                {t.modal.title}
+                            </h2>
                             <button
                                 type='button'
                                 className={modalStyles.closeButton}
                                 onClick={closeModal}
                                 aria-label={t.modal.cancel}
                             >
-                                <i className='ri-close-line' aria-hidden='true' />
+                                <i
+                                    className='ri-close-line'
+                                    aria-hidden='true'
+                                />
                             </button>
                         </header>
                         <form className={modalStyles.form} onSubmit={onSubmit}>

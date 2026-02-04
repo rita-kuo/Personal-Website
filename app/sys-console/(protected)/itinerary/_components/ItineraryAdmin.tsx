@@ -3,7 +3,10 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import styles from '../itinerary.module.css';
-import { addItineraryItem, updateItineraryItem } from '@/app/sys-console/(protected)/itinerary/actions';
+import {
+    addItineraryItem,
+    updateItineraryItem,
+} from '@/app/sys-console/(protected)/itinerary/actions';
 
 type ItineraryItem = {
     id: number;
@@ -122,7 +125,7 @@ export default function ItineraryAdmin({
     const items = selectedDay?.items ?? [];
     const selectedItem = items.find((item) => item.id === selectedItemId);
     const selectedItemIndex = items.findIndex(
-        (item) => item.id === selectedItemId
+        (item) => item.id === selectedItemId,
     );
 
     const weekdayLabels = useMemo(() => t.labels.weekdays ?? [], [t.labels]);
@@ -191,7 +194,9 @@ export default function ItineraryAdmin({
 
         if (updatedDay) {
             setDays((prev) =>
-                prev.map((day) => (day.id === updatedDay.id ? updatedDay : day))
+                prev.map((day) =>
+                    day.id === updatedDay.id ? updatedDay : day,
+                ),
             );
         }
 
@@ -206,7 +211,9 @@ export default function ItineraryAdmin({
 
         if (updatedDay) {
             setDays((prev) =>
-                prev.map((day) => (day.id === updatedDay.id ? updatedDay : day))
+                prev.map((day) =>
+                    day.id === updatedDay.id ? updatedDay : day,
+                ),
             );
             const newestItem = updatedDay.items[updatedDay.items.length - 1];
             if (newestItem) {
@@ -262,11 +269,13 @@ export default function ItineraryAdmin({
                         className={styles.dayButton}
                         onClick={() =>
                             setSelectedDayIndex((prev) =>
-                                Math.min(prev + 1, days.length - 1)
+                                Math.min(prev + 1, days.length - 1),
                             )
                         }
                         aria-label={t.daySwitch.next}
-                        disabled={!hasDays || selectedDayIndex === days.length - 1}
+                        disabled={
+                            !hasDays || selectedDayIndex === days.length - 1
+                        }
                     >
                         <i
                             className={`ri-arrow-right-s-line ${styles.icon}`}
@@ -303,7 +312,10 @@ export default function ItineraryAdmin({
                             className={`${styles.timelineList} ${styles.compactList}`}
                         >
                             {items.map((item, index) => (
-                                <li key={item.id} className={styles.timelineItem}>
+                                <li
+                                    key={item.id}
+                                    className={styles.timelineItem}
+                                >
                                     <button
                                         type='button'
                                         className={`${styles.compactButton} ${
@@ -330,11 +342,15 @@ export default function ItineraryAdmin({
                                             className={styles.connectorCompact}
                                             aria-hidden='true'
                                         >
-                                            <span className={styles.connectorLine} />
+                                            <span
+                                                className={styles.connectorLine}
+                                            />
                                             <i
                                                 className={`ri-car-line ${styles.carIcon}`}
                                             />
-                                            <span className={styles.connectorLine} />
+                                            <span
+                                                className={styles.connectorLine}
+                                            />
                                         </div>
                                     )}
                                 </li>
@@ -342,7 +358,9 @@ export default function ItineraryAdmin({
                         </ol>
                     </div>
                     <div className={styles.detailColumn}>
-                        <article className={`${styles.card} ${styles.detailCard}`}>
+                        <article
+                            className={`${styles.card} ${styles.detailCard}`}
+                        >
                             <h2 className={styles.sectionTitle}>
                                 {t.labels.editor}
                             </h2>
@@ -351,7 +369,10 @@ export default function ItineraryAdmin({
                                     {t.labels.emptySelection}
                                 </p>
                             ) : (
-                                <form className={styles.form} onSubmit={onSubmit}>
+                                <form
+                                    className={styles.form}
+                                    onSubmit={onSubmit}
+                                >
                                     <label className={styles.formLabel}>
                                         {t.labels.title}
                                         <input
@@ -374,11 +395,14 @@ export default function ItineraryAdmin({
                                                 type='time'
                                                 className={styles.input}
                                                 {...register('startTime', {
-                                                    required: t.validation.required,
+                                                    required:
+                                                        t.validation.required,
                                                 })}
                                             />
                                             {errors.startTime && (
-                                                <span className={styles.errorText}>
+                                                <span
+                                                    className={styles.errorText}
+                                                >
                                                     {errors.startTime.message}
                                                 </span>
                                             )}
@@ -391,16 +415,25 @@ export default function ItineraryAdmin({
                                                 {...register('endTime', {
                                                     validate: (value) => {
                                                         if (!value) return true;
-                                                        const start = getValues('startTime');
-                                                        if (start && value < start) {
-                                                            return t.validation.endBeforeStart;
+                                                        const start =
+                                                            getValues(
+                                                                'startTime',
+                                                            );
+                                                        if (
+                                                            start &&
+                                                            value < start
+                                                        ) {
+                                                            return t.validation
+                                                                .endBeforeStart;
                                                         }
                                                         return true;
                                                     },
                                                 })}
                                             />
                                             {errors.endTime && (
-                                                <span className={styles.errorText}>
+                                                <span
+                                                    className={styles.errorText}
+                                                >
                                                     {errors.endTime.message}
                                                 </span>
                                             )}
@@ -479,7 +512,9 @@ export default function ItineraryAdmin({
                                         className={styles.primaryButton}
                                         disabled={isSaving}
                                     >
-                                        {isSaving ? t.labels.saving : t.labels.save}
+                                        {isSaving
+                                            ? t.labels.saving
+                                            : t.labels.save}
                                     </button>
                                 </form>
                             )}

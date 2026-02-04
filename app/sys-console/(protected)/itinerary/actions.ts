@@ -65,9 +65,7 @@ export async function updateItineraryItem(payload: UpdatePayload) {
 
     if (!day) return null;
 
-    const itemIndex = day.items.findIndex(
-        (item) => item.id === payload.itemId
-    );
+    const itemIndex = day.items.findIndex((item) => item.id === payload.itemId);
 
     if (itemIndex === -1) return null;
 
@@ -78,8 +76,7 @@ export async function updateItineraryItem(payload: UpdatePayload) {
         ? combineDateAndTime(day.date, payload.endTime)
         : null;
 
-    const deltaMs =
-        oldEnd && newEnd ? newEnd.getTime() - oldEnd.getTime() : 0;
+    const deltaMs = oldEnd && newEnd ? newEnd.getTime() - oldEnd.getTime() : 0;
 
     await prisma.$transaction(async (tx) => {
         await tx.itineraryItem.update({
@@ -96,21 +93,19 @@ export async function updateItineraryItem(payload: UpdatePayload) {
         });
 
         if (deltaMs !== 0) {
-            const updates = day.items
-                .slice(itemIndex + 1)
-                .map((item) => {
-                    const nextStart = new Date(item.startTime.getTime() + deltaMs);
-                    const nextEnd = item.endTime
-                        ? new Date(item.endTime.getTime() + deltaMs)
-                        : null;
-                    return tx.itineraryItem.update({
-                        where: { id: item.id },
-                        data: {
-                            startTime: nextStart,
-                            endTime: nextEnd,
-                        },
-                    });
+            const updates = day.items.slice(itemIndex + 1).map((item) => {
+                const nextStart = new Date(item.startTime.getTime() + deltaMs);
+                const nextEnd = item.endTime
+                    ? new Date(item.endTime.getTime() + deltaMs)
+                    : null;
+                return tx.itineraryItem.update({
+                    where: { id: item.id },
+                    data: {
+                        startTime: nextStart,
+                        endTime: nextEnd,
+                    },
                 });
+            });
             await Promise.all(updates);
         }
     });
@@ -144,8 +139,8 @@ export async function addItineraryItem(payload: AddPayload) {
     const nextStart = lastItem?.endTime
         ? new Date(lastItem.endTime)
         : lastItem?.startTime
-        ? new Date(lastItem.startTime)
-        : fallbackStart;
+          ? new Date(lastItem.startTime)
+          : fallbackStart;
 
     await prisma.itineraryItem.create({
         data: {

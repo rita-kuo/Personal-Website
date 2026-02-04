@@ -46,5 +46,7 @@ export default async function ItineraryTripPage({ params }: Props) {
     const { messages } = await getMessages(locale, 'sys');
     const trip = await getItineraryTripById(tripId);
 
-    return <ItineraryAdmin messages={messages as any} days={trip?.days ?? []} />;
+    return (
+        <ItineraryAdmin messages={messages as any} days={trip?.days ?? []} />
+    );
 }

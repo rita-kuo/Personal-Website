@@ -71,9 +71,7 @@ export async function getLatestItineraryTrip(): Promise<ItineraryTripDTO | null>
     };
 }
 
-export async function getItineraryTrips(): Promise<
-    ItineraryTripListItemDTO[]
-> {
+export async function getItineraryTrips(): Promise<ItineraryTripListItemDTO[]> {
     const trips = await prisma.itineraryTrip.findMany({
         orderBy: { createdAt: 'desc' },
         include: {
@@ -97,7 +95,7 @@ export async function getItineraryTrips(): Promise<
 }
 
 export async function getItineraryTripById(
-    id: number
+    id: number,
 ): Promise<ItineraryTripDTO | null> {
     const trip = await prisma.itineraryTrip.findUnique({
         where: { id },

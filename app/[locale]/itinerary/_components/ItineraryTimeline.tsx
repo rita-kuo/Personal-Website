@@ -101,7 +101,7 @@ const formatTimeRange = (item: ItineraryItem) => {
 export default function ItineraryTimeline({ messages, days }: Props) {
     const weekdayLabels = useMemo(
         () => messages?.labels?.weekdays ?? [],
-        [messages]
+        [messages],
     );
     const hasDays = days.length > 0;
     const [selectedDayIndex, setSelectedDayIndex] = useState(0);
@@ -179,7 +179,9 @@ export default function ItineraryTimeline({ messages, days }: Props) {
                         className={styles.dayButton}
                         onClick={handleNextDay}
                         aria-label={messages.aria.nextDay}
-                        disabled={!hasDays || selectedDayIndex === days.length - 1}
+                        disabled={
+                            !hasDays || selectedDayIndex === days.length - 1
+                        }
                     >
                         <i
                             className={`ri-arrow-right-s-line ${styles.icon}`}
