@@ -3,21 +3,23 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { FormProvider, useForm } from 'react-hook-form';
 import { useRouter } from 'next/navigation';
+import { DragEndEvent } from '@dnd-kit/core';
 import styles from '../itinerary.module.css';
 import ItineraryEmptyState from './ItineraryEmptyState';
 import ItineraryHeader from './ItineraryHeader';
 import ItineraryItemEditor from './ItineraryItemEditor';
 import ItineraryListItem from './ItineraryListItem';
 import EditTripModal from './EditTripModal';
+import ItineraryDayColumn from './ItineraryDayColumn';
 import ConfirmModal from '@/app/sys-console/_components/ConfirmModal';
 import {
     addItineraryItem,
     addItineraryItemAfter,
-    addItineraryDayAfter,
     createItineraryDay,
     deleteItineraryItem,
     deleteItineraryDay,
     deleteItineraryTrip,
+    reorderItineraryDays,
     saveItineraryTrip,
 } from '@/app/sys-console/(protected)/itinerary/actions';
 
@@ -51,6 +53,7 @@ type AdminMessages = {
         labels: {
             timeline: string;
             dayList: string;
+            dragDay: string;
             editor: string;
             timeStart: string;
             timeEnd: string;
@@ -161,6 +164,13 @@ const formatItemDescription = (item: ItineraryItem) => {
     const start = formatTime(item.startTime);
     if (!item.endTime) return start;
     return `${start} - ${formatTime(item.endTime)}`;
+};
+
+const formatDateInput = (date: Date) => {
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
 };
 
 export default function ItineraryAdmin({
@@ -359,21 +369,32 @@ export default function ItineraryAdmin({
         }
     };
 
-    const handleAddDayAfter = async (afterDayId: number) => {
-        const result = await addItineraryDayAfter({
+    const handleAddDayBeforeFirst = async () => {
+        if (!days[0]) return;
+        const firstDate = new Date(days[0].date);
+        firstDate.setDate(firstDate.getDate() - 1);
+        const result = await createItineraryDay({
             tripId,
-            dayId: afterDayId,
+            departureTitle: t.labels.departureTitle,
+            date: formatDateInput(firstDate),
+        });
+
+        if (result?.days) {
+            setDays(result.days);
+            setSelectedDayIndex(0);
+            setIsTripDirty(true);
+        }
+    };
+
+    const handleAddDayAfterLast = async () => {
+        const result = await createItineraryDay({
+            tripId,
             departureTitle: t.labels.departureTitle,
         });
 
         if (result?.days) {
             setDays(result.days);
-            if (result.newDayId) {
-                const newIndex = result.days.findIndex(
-                    (day) => day.id === result.newDayId,
-                );
-                setSelectedDayIndex(newIndex >= 0 ? newIndex : 0);
-            }
+            setSelectedDayIndex(result.days.length - 1);
             setIsTripDirty(true);
         }
     };
@@ -500,6 +521,33 @@ export default function ItineraryAdmin({
         window.addEventListener('keydown', handler);
         return () => window.removeEventListener('keydown', handler);
     }, [handleSaveTrip, isTripDirty]);
+
+    const handleDayDragEnd = async (event: DragEndEvent) => {
+        const { active, over } = event;
+        if (!over || active.id === over.id) return;
+
+        const activeId = Number(active.id);
+        const overId = Number(over.id);
+        if (Number.isNaN(activeId) || Number.isNaN(overId)) return;
+
+        const selectedDayId = selectedDay?.id ?? null;
+        const result = await reorderItineraryDays({
+            tripId,
+            dayId: activeId,
+            targetDayId: overId,
+        });
+
+        if (result?.days) {
+            setDays(result.days);
+            if (selectedDayId) {
+                const nextIndex = result.days.findIndex(
+                    (day) => day.id === selectedDayId,
+                );
+                setSelectedDayIndex(nextIndex >= 0 ? nextIndex : 0);
+            }
+            setIsTripDirty(true);
+        }
+    };
     return (
         <section className={styles.page}>
             <ItineraryHeader
@@ -525,46 +573,21 @@ export default function ItineraryAdmin({
                     />
                 ) : (
                     <div className={styles.desktopLayoutAdmin}>
-                        <div className={styles.dayColumn}>
-                            <div className={styles.dayListHeader}>
-                                <h2 className={styles.sectionTitle}>
-                                    {t.labels.dayList}
-                                </h2>
-                            </div>
-                            <ol className={styles.dayList}>
-                                {days.map((day, index) => (
-                                    <ItineraryListItem
-                                        key={day.id}
-                                        title={formatDayTitle(
-                                            day,
-                                            weekdayLabels,
-                                        )}
-                                        isSelected={index === selectedDayIndex}
-                                        deleteLabel={t.dayDeleteModal.confirm}
-                                        appendLabel={t.labels.addDay}
-                                        onSelect={() =>
-                                            setSelectedDayIndex(index)
-                                        }
-                                        onDelete={() =>
-                                            openDeleteModal(day.id, index)
-                                        }
-                                        onAppend={() =>
-                                            handleAddDayAfter(day.id)
-                                        }
-                                        containerClassName={styles.dayItem}
-                                        rowClassName={styles.listRow}
-                                        selectClassName={styles.daySelectButton}
-                                        titleClassName={styles.dayTitle}
-                                        appendClassName={styles.addDayButton}
-                                    />
-                                ))}
-                            </ol>
-                        </div>
+                        <ItineraryDayColumn
+                            days={days}
+                            selectedDayIndex={selectedDayIndex}
+                            messages={t}
+                            onSelectDay={(index) => setSelectedDayIndex(index)}
+                            onDeleteDay={openDeleteModal}
+                            onAddDayBeforeFirst={handleAddDayBeforeFirst}
+                            onAddDayAfterLast={handleAddDayAfterLast}
+                            onReorder={handleDayDragEnd}
+                        />
                         <div className={styles.timelineColumn}>
                             <div className={styles.timelineHeader}>
                                 <h2 className={styles.sectionTitle}>
                                     {selectedDay
-                                        ? `${formatDayTitle(selectedDay, weekdayLabels)}行程`
+                                        ? `${formatDayTitle(selectedDay, weekdayLabels)} ${t.labels.timeline}`
                                         : t.labels.timeline}
                                 </h2>
                             </div>
@@ -620,25 +643,7 @@ export default function ItineraryAdmin({
                         <div className={styles.detailColumn}>
                             <FormProvider {...form}>
                                 <ItineraryItemEditor
-                                    labels={{
-                                        editor: t.labels.editor,
-                                        title: t.labels.title,
-                                        timeStart: t.labels.timeStart,
-                                        timeEnd: t.labels.timeEnd,
-                                        location: t.labels.location,
-                                        parking: t.labels.parking,
-                                        contact: t.labels.contact,
-                                        memo: t.labels.memo,
-                                        deleteItem: t.labels.deleteItem,
-                                        emptySelection: t.labels.emptySelection,
-                                    }}
-                                    validation={{
-                                        required: t.validation.required,
-                                        invalidUrl: t.validation.invalidUrl,
-                                        endBeforeStart:
-                                            t.validation.endBeforeStart,
-                                        tooLong: t.validation.tooLong,
-                                    }}
+                                    t={t}
                                     selectedItem={selectedItem}
                                     selectedDay={selectedDay}
                                     onDelete={openDeleteItemModal}

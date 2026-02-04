@@ -138,6 +138,7 @@
             "labels": {
                 "timeline": "Itinerary",
                 "dayList": "Days",
+                "dragDay": "Drag to reorder day",
                 "editor": "Item Editor",
                 "timeStart": "Start Time",
                 "timeEnd": "End Time",

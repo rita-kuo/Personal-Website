@@ -138,6 +138,7 @@
             "labels": {
                 "timeline": "行程",
                 "dayList": "日期",
+                "dragDay": "拖曳調整日期順序",
                 "editor": "項目編輯",
                 "timeStart": "開始時間",
                 "timeEnd": "結束時間",

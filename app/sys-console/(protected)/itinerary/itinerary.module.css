@@ -78,6 +78,18 @@
     cursor: not-allowed;
 }
 
+.deleteIconButton {
+    width: 2.25rem;
+    height: 2.25rem;
+    border: 0;
+    background: transparent;
+    color: var(--pico-color-red-500);
+}
+
+.deleteIconButton:hover {
+    color: var(--pico-color-red-300);
+}
+
 .dayButton:disabled {
     opacity: 0.5;
     cursor: not-allowed;
@@ -150,6 +162,40 @@
     gap: 0.5rem;
 }
 
+.daySortableItem {
+    display: flex;
+    flex-direction: column;
+}
+
+.daySortableRow {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.dayDragHandle {
+    width: 2.4rem;
+    height: 2.4rem;
+    border: 0;
+    background-color: transparent;
+    color: var(--primary-800);
+    font-weight: bold;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    cursor: grab;
+    transition: all 0.2s ease;
+}
+
+.dayDragHandle:hover {
+    border-color: var(--primary-500);
+    color: var(--primary-900);
+}
+
+.dayDragging {
+    opacity: 0.7;
+}
+
 .listRow {
     display: flex;
     align-items: center;
@@ -159,12 +205,14 @@
 .daySelectButton {
     flex: 1;
     text-align: left;
-    padding: 0.75rem 1rem;
+    padding: 0.25rem;
     border-radius: 0.9rem;
     border: 1px solid var(--primary-300);
     background: #ffffff;
     color: var(--primary-900);
     transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
 }
 
 .daySelectButton:hover {
@@ -173,6 +221,7 @@
 
 .dayTitle {
     font-weight: 600;
+    width: 100%;
 }
 
 .addDayButton {

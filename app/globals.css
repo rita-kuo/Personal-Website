@@ -1,5 +1,6 @@
 /* Global Styles */
 @import 'remixicon/fonts/remixicon.css';
+@import '@picocss/pico/css/pico.colors.min.css';
 
 :root {
     /* Primary: 奶茶咖啡系列 - 溫暖、中性、高級感 */

@@ -29,23 +29,25 @@ type FormValues = {
 };
 
 type ItineraryItemEditorProps = {
-    labels: {
-        editor: string;
-        title: string;
-        timeStart: string;
-        timeEnd: string;
-        location: string;
-        parking: string;
-        contact: string;
-        memo: string;
-        deleteItem: string;
-        emptySelection: string;
-    };
-    validation: {
-        required: string;
-        invalidUrl: string;
-        endBeforeStart: string;
-        tooLong: string;
+    t: {
+        labels: {
+            editor: string;
+            title: string;
+            timeStart: string;
+            timeEnd: string;
+            location: string;
+            parking: string;
+            contact: string;
+            memo: string;
+            deleteItem: string;
+            emptySelection: string;
+        };
+        validation: {
+            required: string;
+            invalidUrl: string;
+            endBeforeStart: string;
+            tooLong: string;
+        };
     };
     selectedItem: ItineraryItem | undefined;
     selectedDay: ItineraryDay | undefined;
@@ -65,8 +67,7 @@ const isValidUrl = (value: string) =>
     value.length === 0 || /^https?:\/\//.test(value);
 
 export default function ItineraryItemEditor({
-    labels,
-    validation,
+    t,
     selectedItem,
     selectedDay,
     onDelete,
@@ -81,27 +82,27 @@ export default function ItineraryItemEditor({
     return (
         <article className={`${styles.card} ${styles.detailCard}`}>
             <div className={styles.detailHeader}>
-                <h2 className={styles.sectionTitle}>{labels.editor}</h2>
+                <h2 className={styles.sectionTitle}>{t.labels.editor}</h2>
                 <button
                     type='button'
                     className={styles.secondaryButton}
                     onClick={onDelete}
                     disabled={!selectedItem}
                 >
-                    {labels.deleteItem}
+                    {t.labels.deleteItem}
                 </button>
             </div>
             {!selectedItem ? (
-                <p className={styles.emptyText}>{labels.emptySelection}</p>
+                <p className={styles.emptyText}>{t.labels.emptySelection}</p>
             ) : (
                 <form className={styles.form}>
                     <label className={styles.formLabel}>
-                        {labels.title}
+                        {t.labels.title}
                         <input
                             type='text'
                             className={styles.input}
                             {...register('title', {
-                                required: validation.required,
+                                required: t.validation.required,
                                 onChange: (event) =>
                                     updateSelectedItem({
                                         title: event.target.value,
@@ -116,12 +117,12 @@ export default function ItineraryItemEditor({
                     </label>
                     <div className={styles.formRow}>
                         <label className={styles.formLabel}>
-                            {labels.timeStart}
+                            {t.labels.timeStart}
                             <input
                                 type='time'
                                 className={styles.input}
                                 {...register('startTime', {
-                                    required: validation.required,
+                                    required: t.validation.required,
                                     onChange: (event) => {
                                         if (!selectedDay) return;
                                         const merged = mergeDateAndTime(
@@ -143,7 +144,7 @@ export default function ItineraryItemEditor({
                             )}
                         </label>
                         <label className={styles.formLabel}>
-                            {labels.timeEnd}
+                            {t.labels.timeEnd}
                             <input
                                 type='time'
                                 className={styles.input}
@@ -152,7 +153,7 @@ export default function ItineraryItemEditor({
                                         if (!value) return true;
                                         const start = getValues('startTime');
                                         if (start && value < start) {
-                                            return validation.endBeforeStart;
+                                            return t.validation.endBeforeStart;
                                         }
                                         return true;
                                     },
@@ -185,13 +186,14 @@ export default function ItineraryItemEditor({
                         </label>
                     </div>
                     <label className={styles.formLabel}>
-                        {labels.location}
+                        {t.labels.location}
                         <input
                             type='url'
                             className={styles.input}
                             {...register('location', {
                                 validate: (value) =>
-                                    isValidUrl(value) || validation.invalidUrl,
+                                    isValidUrl(value) ||
+                                    t.validation.invalidUrl,
                                 onChange: (event) =>
                                     updateSelectedItem({
                                         location: event.target.value || null,
@@ -205,13 +207,14 @@ export default function ItineraryItemEditor({
                         )}
                     </label>
                     <label className={styles.formLabel}>
-                        {labels.parking}
+                        {t.labels.parking}
                         <input
                             type='url'
                             className={styles.input}
                             {...register('parking', {
                                 validate: (value) =>
-                                    isValidUrl(value) || validation.invalidUrl,
+                                    isValidUrl(value) ||
+                                    t.validation.invalidUrl,
                                 onChange: (event) =>
                                     updateSelectedItem({
                                         parking: event.target.value || null,
@@ -225,13 +228,14 @@ export default function ItineraryItemEditor({
                         )}
                     </label>
                     <label className={styles.formLabel}>
-                        {labels.contact}
+                        {t.labels.contact}
                         <input
                             type='url'
                             className={styles.input}
                             {...register('contact', {
                                 validate: (value) =>
-                                    isValidUrl(value) || validation.invalidUrl,
+                                    isValidUrl(value) ||
+                                    t.validation.invalidUrl,
                                 onChange: (event) =>
                                     updateSelectedItem({
                                         contact: event.target.value || null,
@@ -245,13 +249,13 @@ export default function ItineraryItemEditor({
                         )}
                     </label>
                     <label className={styles.formLabel}>
-                        {labels.memo}
+                        {t.labels.memo}
                         <textarea
                             className={styles.textarea}
                             rows={4}
                             {...register('memo', {
                                 validate: (value) =>
-                                    value.length <= 500 || validation.tooLong,
+                                    value.length <= 500 || t.validation.tooLong,
                                 onChange: (event) =>
                                     updateSelectedItem({
                                         memo: event.target.value || null,
