@@ -793,6 +793,10 @@ export async function deleteItineraryDay(
             where: { id: payload.dayId },
         });
 
+        if (!trip.days.findIndex((day) => day.id === payload.dayId)) {
+            return;
+        }
+
         for (const day of daysToShift) {
             const shiftedDate = addDays(day.date, -1);
             await tx.itineraryDay.update({
