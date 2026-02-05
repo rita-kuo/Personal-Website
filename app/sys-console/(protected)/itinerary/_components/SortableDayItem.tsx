@@ -82,7 +82,7 @@ export default function SortableDayItem({
                     <span className={styles.dayTitle}>{title}</span>
                     <button
                         type='button'
-                        className={styles.deleteIconButton}
+                        className={`${styles.iconButton} ${styles.deleteIconButton}`}
                         onClick={onDelete}
                         aria-label={deleteLabel}
                     >

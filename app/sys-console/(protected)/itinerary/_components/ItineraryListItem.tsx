@@ -9,12 +9,6 @@ type ItineraryListItemProps = {
     onSelect: () => void;
     onDelete: () => void;
     onAppend: () => void;
-    containerClassName: string;
-    rowClassName: string;
-    selectClassName: string;
-    titleClassName: string;
-    descriptionClassName?: string;
-    appendClassName: string;
 };
 
 export default function ItineraryListItem({
@@ -26,33 +20,29 @@ export default function ItineraryListItem({
     onSelect,
     onDelete,
     onAppend,
-    containerClassName,
-    rowClassName,
-    selectClassName,
-    titleClassName,
-    descriptionClassName,
-    appendClassName,
 }: ItineraryListItemProps) {
     return (
-        <li className={containerClassName}>
-            <div className={rowClassName}>
+        <li className={styles.timelineItem}>
+            <div
+                className={`${styles.listRow} ${
+                    isSelected ? styles.isSelected : ''
+                }`}
+            >
                 <button
                     type='button'
-                    className={`${selectClassName} ${
-                        isSelected ? styles.isSelected : ''
-                    }`}
+                    className={styles.compactButton}
                     onClick={onSelect}
                 >
-                    <span className={titleClassName}>{title}</span>
-                    {description && descriptionClassName && (
-                        <span className={descriptionClassName}>
+                    <span className={styles.compactTitle}>{title}</span>
+                    {description && (
+                        <span className={styles.compactTime}>
                             {description}
                         </span>
                     )}
                 </button>
                 <button
                     type='button'
-                    className={styles.iconButton}
+                    className={`${styles.iconButton} ${styles.deleteIconButton}`}
                     onClick={onDelete}
                     aria-label={deleteLabel}
                 >
@@ -61,7 +51,7 @@ export default function ItineraryListItem({
             </div>
             <button
                 type='button'
-                className={appendClassName}
+                className={styles.addItemButton}
                 onClick={onAppend}
                 aria-label={appendLabel}
             >

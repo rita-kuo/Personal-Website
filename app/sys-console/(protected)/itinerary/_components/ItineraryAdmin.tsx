@@ -682,14 +682,6 @@ export default function ItineraryAdmin({
                                         onAppend={() =>
                                             handleInsertItem(item.id)
                                         }
-                                        containerClassName={styles.timelineItem}
-                                        rowClassName={styles.listRow}
-                                        selectClassName={styles.compactButton}
-                                        titleClassName={styles.compactTitle}
-                                        descriptionClassName={
-                                            styles.compactTime
-                                        }
-                                        appendClassName={styles.addItemButton}
                                     />
                                 ))}
                             </ol>
