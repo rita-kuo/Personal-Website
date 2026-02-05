@@ -135,7 +135,7 @@ export default function ItineraryTripForm({
                 <div className={styles.actions}>
                     <button
                         type='button'
-                        className={styles.secondaryButton}
+                        className={styles.deleteButton}
                         onClick={() => router.push('/sys-console/itinerary')}
                     >
                         {t.labels.cancel}

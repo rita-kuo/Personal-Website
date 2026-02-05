@@ -34,7 +34,7 @@ export default function ItineraryHeader({
                 <div className={styles.headerActions}>
                     <button
                         type='button'
-                        className={styles.secondaryButton}
+                        className={styles.deleteButton}
                         onClick={onDelete}
                     >
                         {deleteLabel}

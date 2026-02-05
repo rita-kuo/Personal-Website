@@ -491,7 +491,7 @@ export default function ItineraryAdmin({
             <ItineraryHeader
                 title={tripTitle || t.title}
                 editLabel={t.labels.editTrip}
-                deleteLabel={t.labels.deleteTrip}
+                deleteLabel={t.labels.deleteTrip.replace('{name}', tripTitle)}
                 errorText={tripSaveError}
                 onEdit={openEditTripModal}
                 onDelete={openDeleteTripModal}

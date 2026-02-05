@@ -104,7 +104,7 @@ export default function ItineraryItemEditor({
                     </button>
                     <button
                         type='button'
-                        className={styles.secondaryButton}
+                        className={styles.deleteButton}
                         onClick={onDelete}
                         disabled={!selectedItem}
                     >
