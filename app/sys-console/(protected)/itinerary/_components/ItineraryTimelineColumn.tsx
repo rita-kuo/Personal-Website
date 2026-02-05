@@ -1,5 +1,6 @@
 import styles from '../itinerary.module.css';
 import ItineraryListItem from './ItineraryListItem';
+import type { ItineraryAdminMessages } from '@/lib/i18n/types';
 
 type ItineraryItem = {
     id: number;
@@ -14,18 +15,7 @@ type ItineraryDay = {
     items: ItineraryItem[];
 };
 
-type ItineraryMessages = {
-    labels: {
-        timeline: string;
-        title: string;
-        addItem: string;
-        deleteItem: string;
-        weekdays: string[];
-    };
-    dayEditModal: {
-        title: string;
-    };
-};
+type ItineraryMessages = ItineraryAdminMessages['itinerary'];
 
 type Props = {
     selectedDay?: ItineraryDay;

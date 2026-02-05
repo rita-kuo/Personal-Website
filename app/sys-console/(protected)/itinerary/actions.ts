@@ -120,6 +120,7 @@ type CreateDayResult = {
 type DeleteDayPayload = {
     tripId: number;
     dayId: number;
+    skipShift?: boolean;
 };
 
 type DeleteDayResult = {

@@ -17,25 +17,14 @@ import {
 import { restrictToVerticalAxis } from '@dnd-kit/modifiers';
 import styles from '../itinerary.module.css';
 import SortableDayItem from './SortableDayItem';
+import type { ItineraryAdminMessages } from '@/lib/i18n/types';
 
 type ItineraryDay = {
     id: number;
     date: string;
 };
 
-type ItineraryMessages = {
-    daySwitch: {
-        addDay: string;
-    };
-    dayDeleteModal: {
-        confirm: string;
-    };
-    labels: {
-        dayList: string;
-        dragDay: string;
-        weekdays: string[];
-    };
-};
+type ItineraryMessages = ItineraryAdminMessages['itinerary'];
 
 type Props = {
     days: ItineraryDay[];

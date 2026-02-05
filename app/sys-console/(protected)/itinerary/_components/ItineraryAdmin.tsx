@@ -13,6 +13,7 @@ import ItineraryDayColumn from './ItineraryDayColumn';
 import EditDayDateModal from './EditDayDateModal';
 import ItineraryTimelineColumn from './ItineraryTimelineColumn';
 import ConfirmModal from '@/app/sys-console/_components/ConfirmModal';
+import type { ItineraryAdminMessages } from '@/lib/i18n/types';
 import {
     addItineraryItem,
     addItineraryItemAfter,
@@ -43,96 +44,6 @@ type ItineraryDay = {
     items: ItineraryItem[];
 };
 
-type AdminMessages = {
-    itinerary: {
-        title: string;
-        daySwitch: {
-            prev: string;
-            next: string;
-            label: string;
-            addDay: string;
-        };
-        labels: {
-            timeline: string;
-            dayList: string;
-            dragDay: string;
-            editor: string;
-            timeStart: string;
-            timeEnd: string;
-            title: string;
-            location: string;
-            parking: string;
-            contact: string;
-            memo: string;
-            saveTrip: string;
-            savingTrip: string;
-            addItem: string;
-            deleteItem: string;
-            editTrip: string;
-            deleteTrip: string;
-            emptySelection: string;
-            emptyDay: string;
-            emptyTitle: string;
-            emptyBody: string;
-            addDay: string;
-            departureTitle: string;
-            weekdays: string[];
-        };
-        tripModal: {
-            title: string;
-            nameLabel: string;
-            slugLabel: string;
-            cancel: string;
-            save: string;
-            saving: string;
-        };
-        tripDeleteModal: {
-            title: string;
-            body: string;
-            cancel: string;
-            confirm: string;
-            deleting: string;
-        };
-        dayModal: {
-            title: string;
-            dateLabel: string;
-            cancel: string;
-            create: string;
-            creating: string;
-        };
-        dayEditModal: {
-            title: string;
-            dateLabel: string;
-            cancel: string;
-            save: string;
-        };
-        itemDeleteModal: {
-            title: string;
-            body: string;
-            cancel: string;
-            confirm: string;
-            deleting: string;
-        };
-        dayDeleteModal: {
-            title: string;
-            body: string;
-            cancel: string;
-            confirm: string;
-            deleting: string;
-        };
-        validation: {
-            required: string;
-            invalidUrl: string;
-            endBeforeStart: string;
-            tooLong: string;
-            dateDuplicate: string;
-            dateInvalid: string;
-            saveFailed: string;
-            slugDuplicate: string;
-        };
-    };
-};
-
 type FormValues = {
     title: string;
     startTime: string;
@@ -161,7 +72,7 @@ export default function ItineraryAdmin({
     tripTitle: initialTripTitle,
     tripSlug: initialTripSlug,
 }: {
-    messages: AdminMessages;
+    messages: ItineraryAdminMessages;
     days: ItineraryDay[];
     tripId: number;
     tripTitle: string;
@@ -178,17 +89,16 @@ export default function ItineraryAdmin({
     const [isSavingTrip, setIsSavingTrip] = useState(false);
     const [tripSaveError, setTripSaveError] = useState('');
     const [isEditTripModalOpen, setIsEditTripModalOpen] = useState(false);
-    const [isDeleteTripModalOpen, setIsDeleteTripModalOpen] = useState(false);
-    const [isDeletingTrip, setIsDeletingTrip] = useState(false);
-    const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
     const [isEditDayModalOpen, setIsEditDayModalOpen] = useState(false);
-    const [isDeleting, setIsDeleting] = useState(false);
-    const [deleteDayTargetId, setDeleteDayTargetId] = useState<number | null>(
-        null,
-    );
-    const [deleteDayTargetIndex, setDeleteDayTargetIndex] = useState(0);
-    const [isDeleteItemModalOpen, setIsDeleteItemModalOpen] = useState(false);
-    const [isDeletingItem, setIsDeletingItem] = useState(false);
+    const [isConfirming, setIsConfirming] = useState(false);
+    const [confirmPayload, setConfirmPayload] = useState<null | {
+        title: string;
+        body: string;
+        cancelLabel: string;
+        confirmLabel: string;
+        confirmingLabel?: string;
+        onConfirm: () => Promise<void>;
+    }>(null);
 
     const hasDays = days.length > 0;
     const selectedDay = days[selectedDayIndex];
@@ -377,15 +287,9 @@ export default function ItineraryAdmin({
         }
     };
 
-    const openDeleteModal = (dayId: number, dayIndex: number) => {
-        setDeleteDayTargetId(dayId);
-        setDeleteDayTargetIndex(dayIndex);
-        setIsDeleteModalOpen(true);
-    };
-
-    const closeDeleteModal = () => {
-        setIsDeleteModalOpen(false);
-        setDeleteDayTargetId(null);
+    const closeConfirmModal = () => {
+        if (isConfirming) return;
+        setConfirmPayload(null);
     };
 
     const openEditTripModal = () => {
@@ -404,6 +308,7 @@ export default function ItineraryAdmin({
     const closeEditDayModal = () => {
         setIsEditDayModalOpen(false);
     };
+
     const handleTripMetaSave = async (nextTitle: string, nextSlug: string) => {
         setIsSavingTrip(true);
         setTripSaveError('');
@@ -431,83 +336,84 @@ export default function ItineraryAdmin({
         }
     };
 
+    const openDeleteDayModal = (dayId: number, dayIndex: number) => {
+        setConfirmPayload({
+            title: t.dayDeleteModal.title,
+            body: t.dayDeleteModal.body,
+            cancelLabel: t.dayDeleteModal.cancel,
+            confirmLabel: t.dayDeleteModal.confirm,
+            confirmingLabel: t.dayDeleteModal.deleting,
+            onConfirm: async () => {
+                const result = await deleteItineraryDay({
+                    tripId,
+                    dayId,
+                    skipShift: dayIndex === 0,
+                });
+
+                if (result?.days) {
+                    setDays(result.days);
+                    const nextIndex = result.days.length
+                        ? Math.min(dayIndex, result.days.length - 1)
+                        : 0;
+                    setSelectedDayIndex(nextIndex);
+                }
+            },
+        });
+    };
+
+    const openDeleteItemModal = (itemId?: number) => {
+        const targetId = itemId ?? selectedItemId;
+        if (!selectedDay || !targetId) return;
+
+        setSelectedItemId(targetId);
+        setConfirmPayload({
+            title: t.itemDeleteModal.title,
+            body: t.itemDeleteModal.body,
+            cancelLabel: t.itemDeleteModal.cancel,
+            confirmLabel: t.itemDeleteModal.confirm,
+            confirmingLabel: t.itemDeleteModal.deleting,
+            onConfirm: async () => {
+                const updatedDay = await deleteItineraryItem({
+                    dayId: selectedDay.id,
+                    itemId: targetId,
+                });
+
+                if (updatedDay) {
+                    setDays((prev) =>
+                        prev.map((day) =>
+                            day.id === updatedDay.id ? updatedDay : day,
+                        ),
+                    );
+                    if (updatedDay.items.length === 0) {
+                        setSelectedItemId(null);
+                    } else {
+                        const nextIndex = Math.min(
+                            selectedItemIndex,
+                            updatedDay.items.length - 1,
+                        );
+                        const nextItem =
+                            updatedDay.items[Math.max(0, nextIndex)];
+                        setSelectedItemId(nextItem?.id ?? null);
+                    }
+                }
+            },
+        });
+    };
+
     const openDeleteTripModal = () => {
-        setIsDeleteTripModalOpen(true);
-    };
-
-    const closeDeleteTripModal = () => {
-        setIsDeleteTripModalOpen(false);
-    };
-
-    const openDeleteItemModal = () => {
-        if (!selectedItemId) return;
-        setIsDeleteItemModalOpen(true);
-    };
-
-    const openDeleteItemModalWithId = (itemId: number) => {
-        setSelectedItemId(itemId);
-        setIsDeleteItemModalOpen(true);
-    };
-
-    const closeDeleteItemModal = () => {
-        setIsDeleteItemModalOpen(false);
-    };
-
-    const handleDeleteDay = async () => {
-        if (!deleteDayTargetId) return;
-        setIsDeleting(true);
-        const result = await deleteItineraryDay({
-            tripId,
-            dayId: deleteDayTargetId,
+        setConfirmPayload({
+            title: t.tripDeleteModal.title,
+            body: t.tripDeleteModal.body,
+            cancelLabel: t.tripDeleteModal.cancel,
+            confirmLabel: t.tripDeleteModal.confirm,
+            confirmingLabel: t.tripDeleteModal.deleting,
+            onConfirm: async () => {
+                const result = await deleteItineraryTrip({ tripId });
+                if (!result?.error) {
+                    router.push('/sys-console/itinerary');
+                }
+            },
         });
-        setIsDeleting(false);
-
-        if (result?.days) {
-            setDays(result.days);
-            const nextIndex = result.days.length
-                ? Math.min(deleteDayTargetIndex, result.days.length - 1)
-                : 0;
-            setSelectedDayIndex(nextIndex);
-            closeDeleteModal();
-        }
-    };
-
-    const handleDeleteItem = async () => {
-        if (!selectedDay || !selectedItemId) return;
-        setIsDeletingItem(true);
-        const updatedDay = await deleteItineraryItem({
-            dayId: selectedDay.id,
-            itemId: selectedItemId,
-        });
-        setIsDeletingItem(false);
-
-        if (updatedDay) {
-            setDays((prev) =>
-                prev.map((day) =>
-                    day.id === updatedDay.id ? updatedDay : day,
-                ),
-            );
-            if (updatedDay.items.length === 0) {
-                setSelectedItemId(null);
-            } else {
-                const nextIndex = Math.min(
-                    selectedItemIndex,
-                    updatedDay.items.length - 1,
-                );
-                const nextItem = updatedDay.items[Math.max(0, nextIndex)];
-                setSelectedItemId(nextItem?.id ?? null);
-            }
-            closeDeleteItemModal();
-        }
-    };
-
-    const handleDeleteTrip = async () => {
-        setIsDeletingTrip(true);
-        const result = await deleteItineraryTrip({ tripId });
-        setIsDeletingTrip(false);
-        if (!result?.error) {
-            router.push('/sys-console/itinerary');
-        }
     };
 
     const handleUpdateDayDate = async (nextDate: string) => {
@@ -569,6 +475,17 @@ export default function ItineraryAdmin({
             }
         }
     };
+
+    const handleConfirm = async () => {
+        if (!confirmPayload) return;
+        setIsConfirming(true);
+        try {
+            await confirmPayload.onConfirm();
+            setConfirmPayload(null);
+        } finally {
+            setIsConfirming(false);
+        }
+    };
     return (
         <section className={styles.page}>
             <ItineraryHeader
@@ -594,7 +511,7 @@ export default function ItineraryAdmin({
                             selectedDayIndex={selectedDayIndex}
                             messages={t}
                             onSelectDay={(index) => setSelectedDayIndex(index)}
-                            onDeleteDay={openDeleteModal}
+                            onDeleteDay={openDeleteDayModal}
                             onAddDayBeforeFirst={handleAddDayBeforeFirst}
                             onAddDayAfterLast={handleAddDayAfterLast}
                             onReorder={handleDayDragEnd}
@@ -606,7 +523,7 @@ export default function ItineraryAdmin({
                             messages={t}
                             onAddFirstItem={handleAddFirstItem}
                             onSelectItem={setSelectedItemId}
-                            onDeleteItem={openDeleteItemModalWithId}
+                            onDeleteItem={openDeleteItemModal}
                             onInsertItem={handleInsertItem}
                             onEditDay={openEditDayModal}
                         />
@@ -620,7 +537,7 @@ export default function ItineraryAdmin({
                                     isSaving={isSavingTrip}
                                     errorText={tripSaveError}
                                     onSave={handleSaveItems}
-                                    onDelete={openDeleteItemModal}
+                                    onDelete={() => openDeleteItemModal()}
                                     updateSelectedItem={updateSelectedItem}
                                 />
                             </FormProvider>
@@ -628,28 +545,6 @@ export default function ItineraryAdmin({
                     </div>
                 )}
             </div>
-            <ConfirmModal
-                isOpen={isDeleteItemModalOpen}
-                title={t.itemDeleteModal.title}
-                body={t.itemDeleteModal.body}
-                cancelLabel={t.itemDeleteModal.cancel}
-                confirmLabel={t.itemDeleteModal.confirm}
-                confirmingLabel={t.itemDeleteModal.deleting}
-                isConfirming={isDeletingItem}
-                onCancel={closeDeleteItemModal}
-                onConfirm={handleDeleteItem}
-            />
-            <ConfirmModal
-                isOpen={isDeleteModalOpen}
-                title={t.dayDeleteModal.title}
-                body={t.dayDeleteModal.body}
-                cancelLabel={t.dayDeleteModal.cancel}
-                confirmLabel={t.dayDeleteModal.confirm}
-                confirmingLabel={t.dayDeleteModal.deleting}
-                isConfirming={isDeleting}
-                onCancel={closeDeleteModal}
-                onConfirm={handleDeleteDay}
-            />
             <EditDayDateModal
                 isOpen={isEditDayModalOpen}
                 date={
@@ -688,15 +583,15 @@ export default function ItineraryAdmin({
                 onSave={handleTripMetaSave}
             />
             <ConfirmModal
-                isOpen={isDeleteTripModalOpen}
-                title={t.tripDeleteModal.title}
-                body={t.tripDeleteModal.body}
-                cancelLabel={t.tripDeleteModal.cancel}
-                confirmLabel={t.tripDeleteModal.confirm}
-                confirmingLabel={t.tripDeleteModal.deleting}
-                isConfirming={isDeletingTrip}
-                onCancel={closeDeleteTripModal}
-                onConfirm={handleDeleteTrip}
+                isOpen={Boolean(confirmPayload)}
+                title={confirmPayload?.title ?? ''}
+                body={confirmPayload?.body ?? ''}
+                cancelLabel={confirmPayload?.cancelLabel ?? ''}
+                confirmLabel={confirmPayload?.confirmLabel ?? ''}
+                confirmingLabel={confirmPayload?.confirmingLabel}
+                isConfirming={isConfirming}
+                onCancel={closeConfirmModal}
+                onConfirm={handleConfirm}
             />
         </section>
     );
