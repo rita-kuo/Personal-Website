@@ -1,7 +1,7 @@
 'use client';
 
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { usePathname, useRouter, useSearchParams } from 'next/navigation';
+import { useRouter } from 'next/navigation';
 import ConfirmModal from './ConfirmModal';
 
 type UnsavedModalLabels = {
@@ -25,19 +25,23 @@ export default function UnsavedChangesGuard({
     children,
 }: UnsavedChangesGuardProps) {
     const router = useRouter();
-    const pathname = usePathname();
-    const searchParams = useSearchParams();
-    const lastUrlRef = useRef<string>('');
-    const pendingActionRef = useRef<(() => void) | null>(null);
-    const skipPopStateRef = useRef(false);
     const [isConfirming, setIsConfirming] = useState(false);
     const [isModalOpen, setIsModalOpen] = useState(false);
 
+    const pendingActionRef = useRef<(() => void) | null>(null);
+    const isInternalNavigationRef = useRef(false);
+
+    // 關閉 Modal：如果使用者按取消，我們要「補回」剛才被退掉的 dummy state
     const closeConfirmModal = useCallback(() => {
         if (isConfirming) return;
         setIsModalOpen(false);
         pendingActionRef.current = null;
-    }, [isConfirming]);
+
+        // 重要：使用者取消了，網址剛才已經退回去了，我們要再推一個回來維持攔截狀態
+        if (isDirty) {
+            window.history.pushState(null, '', window.location.href);
+        }
+    }, [isConfirming, isDirty]);
 
     const openConfirm = useCallback(
         (action: () => void) => {
@@ -45,7 +49,6 @@ export default function UnsavedChangesGuard({
                 action();
                 return;
             }
-
             pendingActionRef.current = action;
             setIsModalOpen(true);
         },
@@ -56,7 +59,8 @@ export default function UnsavedChangesGuard({
         if (!pendingActionRef.current) return;
         setIsConfirming(true);
         try {
-            pendingActionRef.current();
+            isInternalNavigationRef.current = true;
+            await pendingActionRef.current();
         } finally {
             setIsConfirming(false);
             setIsModalOpen(false);
@@ -64,62 +68,43 @@ export default function UnsavedChangesGuard({
         }
     }, []);
 
-    useEffect(() => {
-        const query = searchParams?.toString();
-        lastUrlRef.current = query ? `${pathname}?${query}` : pathname;
-    }, [pathname, searchParams]);
-
+    // 1. 處理重新整理、關閉分頁
     useEffect(() => {
         if (!isDirty) return;
         const handleBeforeUnload = (event: BeforeUnloadEvent) => {
             event.preventDefault();
             event.returnValue = '';
         };
-
         window.addEventListener('beforeunload', handleBeforeUnload);
         return () =>
             window.removeEventListener('beforeunload', handleBeforeUnload);
     }, [isDirty]);
 
+    // 2. 核心邏輯：修正歷史紀錄堆疊
     useEffect(() => {
-        const handlePopState = (event: PopStateEvent) => {
-            if (skipPopStateRef.current) {
-                skipPopStateRef.current = false;
-                return;
-            }
+        if (!isDirty) return;
 
-            if (!isDirty) return;
+        // 初始化：進來時先推一個 dummy，這會讓「上一頁」按鈕亮起，但網址不變
+        window.history.pushState(null, '', window.location.href);
 
-            event.stopImmediatePropagation();
-            event.stopPropagation();
+        const handlePopState = () => {
+            if (isInternalNavigationRef.current) return;
 
-            const currentUrl = lastUrlRef.current || pathname;
-            const nextUrl = window.location.href;
-            window.history.pushState(null, '', currentUrl);
-
-            const nextPath = (() => {
-                try {
-                    const parsed = new URL(nextUrl);
-                    return `${parsed.pathname}${parsed.search}${parsed.hash}`;
-                } catch {
-                    return nextUrl;
-                }
-            })();
-
-            openConfirm(() => {
-                skipPopStateRef.current = true;
-                router.push(nextPath);
-            });
+            // 當使用者點擊「上一頁」，瀏覽器會退回到進入本頁時的狀態
+            // 我們攔截它，彈出視窗
+            pendingActionRef.current = () => {
+                isInternalNavigationRef.current = true;
+                // 連退兩次：一次是 dummy，一次是真正的上一步
+                window.history.go(-2);
+            };
+            setIsModalOpen(true);
         };
 
-        window.addEventListener('popstate', handlePopState, {
-            capture: true,
-        });
-        return () =>
-            window.removeEventListener('popstate', handlePopState, {
-                capture: true,
-            });
-    }, [isDirty, openConfirm, pathname, router]);
+        window.addEventListener('popstate', handlePopState);
+        return () => {
+            window.removeEventListener('popstate', handlePopState);
+        };
+    }, [isDirty]);
 
     return (
         <>
