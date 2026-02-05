@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { FormProvider, useForm } from 'react-hook-form';
 import { useRouter } from 'next/navigation';
 import { DragEndEvent } from '@dnd-kit/core';
@@ -8,10 +8,10 @@ import styles from '../itinerary.module.css';
 import ItineraryEmptyState from './ItineraryEmptyState';
 import ItineraryHeader from './ItineraryHeader';
 import ItineraryItemEditor from './ItineraryItemEditor';
-import ItineraryListItem from './ItineraryListItem';
 import EditTripModal from './EditTripModal';
 import ItineraryDayColumn from './ItineraryDayColumn';
 import EditDayDateModal from './EditDayDateModal';
+import ItineraryTimelineColumn from './ItineraryTimelineColumn';
 import ConfirmModal from '@/app/sys-console/_components/ConfirmModal';
 import {
     addItineraryItem,
@@ -150,35 +150,8 @@ const formatTime = (value: string | null | undefined) => {
     const minutes = String(date.getMinutes()).padStart(2, '0');
     return `${hours}:${minutes}`;
 };
-
-const getWeekdayLabel = (date: Date, labels: string[]) => {
-    const index = date.getDay();
-    return labels[index] ?? '';
-};
-
-const formatDayTitle = (day: ItineraryDay, labels: string[]) => {
-    const date = new Date(day.date);
-    const month = String(date.getMonth() + 1).padStart(2, '0');
-    const dayOfMonth = String(date.getDate()).padStart(2, '0');
-    const weekday = getWeekdayLabel(date, labels);
-    return `${month}/${dayOfMonth} ${weekday}`;
-};
-
 const getDefaultSelectionId = (day: ItineraryDay) => {
     return day.items[0]?.id ?? null;
-};
-
-const formatItemDescription = (item: ItineraryItem) => {
-    const start = formatTime(item.startTime);
-    if (!item.endTime) return start;
-    return `${start} - ${formatTime(item.endTime)}`;
-};
-
-const formatDateInput = (date: Date) => {
-    const year = date.getFullYear();
-    const month = String(date.getMonth() + 1).padStart(2, '0');
-    const day = String(date.getDate()).padStart(2, '0');
-    return `${year}-${month}-${day}`;
 };
 
 export default function ItineraryAdmin({
@@ -224,8 +197,6 @@ export default function ItineraryAdmin({
     const selectedItemIndex = items.findIndex(
         (item) => item.id === selectedItemId,
     );
-
-    const weekdayLabels = useMemo(() => t.labels.weekdays ?? [], [t.labels]);
 
     useEffect(() => {
         if (!hasDays) {
@@ -379,10 +350,13 @@ export default function ItineraryAdmin({
         if (!days[0]) return;
         const firstDate = new Date(days[0].date);
         firstDate.setDate(firstDate.getDate() - 1);
+        const firstDateValue = `${firstDate.getFullYear()}-${String(
+            firstDate.getMonth() + 1,
+        ).padStart(2, '0')}-${String(firstDate.getDate()).padStart(2, '0')}`;
         const result = await createItineraryDay({
             tripId,
             departureTitle: t.labels.departureTitle,
-            date: formatDateInput(firstDate),
+            date: firstDateValue,
         });
 
         if (result?.days) {
@@ -625,67 +599,17 @@ export default function ItineraryAdmin({
                             onAddDayAfterLast={handleAddDayAfterLast}
                             onReorder={handleDayDragEnd}
                         />
-                        <div className={styles.timelineColumn}>
-                            <div className={styles.timelineHeader}>
-                                <h2 className={styles.sectionTitle}>
-                                    {selectedDay
-                                        ? `${formatDayTitle(selectedDay, weekdayLabels)} ${t.labels.timeline}`
-                                        : t.labels.timeline}
-                                </h2>
-                                <button
-                                    type='button'
-                                    className={styles.iconButton}
-                                    onClick={openEditDayModal}
-                                    aria-label={t.dayEditModal.title}
-                                    disabled={!selectedDay}
-                                >
-                                    <i
-                                        className='ri-pencil-line'
-                                        aria-hidden='true'
-                                    />
-                                </button>
-                            </div>
-                            <ol
-                                className={`${styles.timelineList} ${styles.compactList}`}
-                            >
-                                {items.length === 0 && (
-                                    <li className={styles.timelineItem}>
-                                        <button
-                                            type='button'
-                                            className={styles.addItemButton}
-                                            aria-label={t.labels.addItem}
-                                            onClick={handleAddFirstItem}
-                                        >
-                                            <i
-                                                className='ri-add-line'
-                                                aria-hidden='true'
-                                            />
-                                        </button>
-                                    </li>
-                                )}
-                                {items.map((item) => (
-                                    <ItineraryListItem
-                                        key={item.id}
-                                        title={item.title || t.labels.title}
-                                        description={formatItemDescription(
-                                            item,
-                                        )}
-                                        isSelected={item.id === selectedItemId}
-                                        deleteLabel={t.labels.deleteItem}
-                                        appendLabel={t.labels.addItem}
-                                        onSelect={() =>
-                                            setSelectedItemId(item.id)
-                                        }
-                                        onDelete={() =>
-                                            openDeleteItemModalWithId(item.id)
-                                        }
-                                        onAppend={() =>
-                                            handleInsertItem(item.id)
-                                        }
-                                    />
-                                ))}
-                            </ol>
-                        </div>
+                        <ItineraryTimelineColumn
+                            selectedDay={selectedDay}
+                            selectedItemId={selectedItemId}
+                            items={items}
+                            messages={t}
+                            onAddFirstItem={handleAddFirstItem}
+                            onSelectItem={setSelectedItemId}
+                            onDeleteItem={openDeleteItemModalWithId}
+                            onInsertItem={handleInsertItem}
+                            onEditDay={openEditDayModal}
+                        />
                         <div className={styles.detailColumn}>
                             <FormProvider {...form}>
                                 <ItineraryItemEditor
@@ -730,7 +654,11 @@ export default function ItineraryAdmin({
                 isOpen={isEditDayModalOpen}
                 date={
                     selectedDay
-                        ? formatDateInput(new Date(selectedDay.date))
+                        ? `${new Date(selectedDay.date).getFullYear()}-${String(
+                              new Date(selectedDay.date).getMonth() + 1,
+                          ).padStart(2, '0')}-${String(
+                              new Date(selectedDay.date).getDate(),
+                          ).padStart(2, '0')}`
                         : ''
                 }
                 labels={{

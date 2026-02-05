@@ -874,6 +874,18 @@ export async function updateItineraryDayDate(
     }
 
     await prisma.$transaction(async (tx) => {
+        const bufferDays = trip.days.length + 1;
+
+        await Promise.all(
+            trip.days.map(async (day) => {
+                const tempDate = addDays(day.date, delta + bufferDays);
+                await tx.itineraryDay.update({
+                    where: { id: day.id },
+                    data: { date: tempDate },
+                });
+            }),
+        );
+
         await Promise.all(
             trip.days.map(async (day) => {
                 const nextDate = addDays(day.date, delta);
