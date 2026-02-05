@@ -119,8 +119,15 @@ export default function ItineraryAdmin({
             setSelectedDayIndex(0);
             return;
         }
-        setSelectedItemId(getDefaultSelectionId(days[selectedDayIndex]));
-    }, [days, hasDays, selectedDayIndex]);
+        const currentDay = days[selectedDayIndex];
+        if (!currentDay) return;
+        const stillExists = currentDay.items.some(
+            (item) => item.id === selectedItemId,
+        );
+        if (!stillExists) {
+            setSelectedItemId(getDefaultSelectionId(currentDay));
+        }
+    }, [days, hasDays, selectedDayIndex, selectedItemId]);
 
     const form = useForm<FormValues>({
         defaultValues: {
@@ -149,6 +156,11 @@ export default function ItineraryAdmin({
             memo: selectedItem.memo ?? '',
         });
     }, [reset, selectedItem]);
+
+    useEffect(() => {
+        setIsItemsDirty(false);
+        setTripSaveError('');
+    }, [selectedDayIndex, selectedItemId]);
 
     const updateSelectedItem = useCallback(
         (updates: Partial<ItineraryItem>) => {
@@ -540,7 +552,9 @@ export default function ItineraryAdmin({
                                     selectedDayIndex={selectedDayIndex}
                                     messages={t}
                                     onSelectDay={(index) =>
-                                        setSelectedDayIndex(index)
+                                        guardAction(() =>
+                                            setSelectedDayIndex(index),
+                                        )
                                     }
                                     onDeleteDay={openDeleteDayModal}
                                     onAddDayBeforeFirst={
@@ -555,7 +569,9 @@ export default function ItineraryAdmin({
                                     items={items}
                                     messages={t}
                                     onAddFirstItem={handleAddFirstItem}
-                                    onSelectItem={setSelectedItemId}
+                                    onSelectItem={(id) =>
+                                        guardAction(() => setSelectedItemId(id))
+                                    }
                                     onDeleteItem={openDeleteItemModal}
                                     onInsertItem={handleInsertItem}
                                     onEditDay={openEditDayModal}
