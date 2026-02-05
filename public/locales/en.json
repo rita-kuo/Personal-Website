@@ -82,6 +82,7 @@
             "modal": {
                 "title": "New Itinerary",
                 "nameLabel": "Itinerary Title",
+                "startDateLabel": "Start date",
                 "cancel": "Cancel",
                 "create": "Create",
                 "creating": "Creating..."
@@ -140,10 +141,17 @@
                 "confirm": "Delete",
                 "deleting": "Deleting..."
             },
+            "unsavedModal": {
+                "title": "Unsaved changes",
+                "body": "Your item edits are not saved. Leave without saving?",
+                "cancel": "Cancel",
+                "confirm": "Leave"
+            },
             "labels": {
                 "timeline": "Itinerary",
                 "dayList": "Days",
                 "dragDay": "Drag to reorder day",
+                "back": "Back to list",
                 "editor": "Item Editor",
                 "timeStart": "Start Time",
                 "timeEnd": "End Time",

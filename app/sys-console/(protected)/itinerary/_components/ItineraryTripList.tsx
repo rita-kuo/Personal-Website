@@ -28,6 +28,7 @@ type ItineraryListMessages = {
         modal: {
             title: string;
             nameLabel: string;
+            startDateLabel: string;
             cancel: string;
             create: string;
             creating: string;
@@ -40,6 +41,14 @@ type ItineraryListMessages = {
 
 type FormValues = {
     title: string;
+    startDate: string;
+};
+
+const formatDateInput = (date: Date) => {
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
 };
 
 const formatDate = (value: string | null) => {
@@ -64,12 +73,12 @@ export default function ItineraryTripList({
     const [isOpen, setIsOpen] = useState(false);
     const [isSaving, setIsSaving] = useState(false);
     const { register, handleSubmit, reset, formState } = useForm<FormValues>({
-        defaultValues: { title: '' },
+        defaultValues: { title: '', startDate: formatDateInput(new Date()) },
     });
 
     const closeModal = () => {
         setIsOpen(false);
-        reset({ title: '' });
+        reset({ title: '', startDate: formatDateInput(new Date()) });
     };
 
     const onSubmit = handleSubmit(async (values) => {
@@ -77,6 +86,7 @@ export default function ItineraryTripList({
         const result = await createItineraryTrip({
             title: values.title,
             departureTitle: t.departureTitle,
+            startDate: values.startDate,
         });
         setIsSaving(false);
 
@@ -137,8 +147,16 @@ export default function ItineraryTripList({
             </div>
 
             {isOpen && (
-                <div className={modalStyles.backdrop}>
-                    <div className={modalStyles.modal}>
+                <div
+                    className={`${modalStyles.backdrop} ${
+                        modalStyles.backdropOpen
+                    }`}
+                >
+                    <div
+                        className={`${modalStyles.modal} ${
+                            modalStyles.modalOpen
+                        }`}
+                    >
                         <header className={modalStyles.header}>
                             <h2 className={modalStyles.title}>
                                 {t.modal.title}
@@ -168,6 +186,21 @@ export default function ItineraryTripList({
                                 {formState.errors.title && (
                                     <span className={modalStyles.errorText}>
                                         {formState.errors.title.message}
+                                    </span>
+                                )}
+                            </label>
+                            <label className={modalStyles.formLabel}>
+                                {t.modal.startDateLabel || t.list.startDate}
+                                <input
+                                    type='date'
+                                    className={modalStyles.input}
+                                    {...register('startDate', {
+                                        required: t.validation.required,
+                                    })}
+                                />
+                                {formState.errors.startDate && (
+                                    <span className={modalStyles.errorText}>
+                                        {formState.errors.startDate.message}
                                     </span>
                                 )}
                             </label>

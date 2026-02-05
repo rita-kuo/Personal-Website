@@ -11,6 +11,7 @@ export type ItineraryAdminMessages = {
             timeline: string;
             dayList: string;
             dragDay: string;
+            back: string;
             editor: string;
             timeStart: string;
             timeEnd: string;
@@ -47,6 +48,12 @@ export type ItineraryAdminMessages = {
             cancel: string;
             confirm: string;
             deleting: string;
+        };
+        unsavedModal: {
+            title: string;
+            body: string;
+            cancel: string;
+            confirm: string;
         };
         dayModal: {
             title: string;

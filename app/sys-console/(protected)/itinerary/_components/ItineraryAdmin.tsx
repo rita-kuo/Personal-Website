@@ -13,6 +13,7 @@ import ItineraryDayColumn from './ItineraryDayColumn';
 import EditDayDateModal from './EditDayDateModal';
 import ItineraryTimelineColumn from './ItineraryTimelineColumn';
 import ConfirmModal from '@/app/sys-console/_components/ConfirmModal';
+import UnsavedChangesGuard from '@/app/sys-console/_components/UnsavedChangesGuard';
 import type { ItineraryAdminMessages } from '@/lib/i18n/types';
 import {
     addItineraryItem,
@@ -450,6 +451,27 @@ export default function ItineraryAdmin({
         return () => window.removeEventListener('keydown', handler);
     }, [handleSaveItems, isItemsDirty]);
 
+    const handleBack = useCallback(
+        (guardAction: (action: () => void) => void) => {
+            guardAction(() => {
+                router.push('/sys-console/itinerary');
+            });
+        },
+        [router],
+    );
+
+    useEffect(() => {
+        if (!isItemsDirty) return;
+        const handleBeforeUnload = (event: BeforeUnloadEvent) => {
+            event.preventDefault();
+            event.returnValue = '';
+        };
+
+        window.addEventListener('beforeunload', handleBeforeUnload);
+        return () =>
+            window.removeEventListener('beforeunload', handleBeforeUnload);
+    }, [isItemsDirty]);
+
     const handleDayDragEnd = async (event: DragEndEvent) => {
         const { active, over } = event;
         if (!over || active.id === over.id) return;
@@ -487,112 +509,129 @@ export default function ItineraryAdmin({
         }
     };
     return (
-        <section className={styles.page}>
-            <ItineraryHeader
-                title={tripTitle || t.title}
-                editLabel={t.labels.editTrip}
-                deleteLabel={t.labels.deleteTrip.replace('{name}', tripTitle)}
-                errorText={tripSaveError}
-                onEdit={openEditTripModal}
-                onDelete={openDeleteTripModal}
-            />
-            <div className={styles.contentArea}>
-                {!hasDays ? (
-                    <ItineraryEmptyState
-                        title={t.labels.emptyTitle}
-                        body={t.labels.emptyBody}
-                        addLabel={t.labels.addDay}
-                        onAdd={handleAddFirstDay}
+        <UnsavedChangesGuard isDirty={isItemsDirty} labels={t.unsavedModal}>
+            {({ guardAction }) => (
+                <section className={styles.page}>
+                    <ItineraryHeader
+                        title={tripTitle || t.title}
+                        backLabel={t.labels.back}
+                        editLabel={t.labels.editTrip}
+                        deleteLabel={t.labels.deleteTrip.replace(
+                            '{name}',
+                            tripTitle,
+                        )}
+                        errorText={tripSaveError}
+                        onBack={() => handleBack(guardAction)}
+                        onEdit={openEditTripModal}
+                        onDelete={openDeleteTripModal}
                     />
-                ) : (
-                    <div className={styles.desktopLayoutAdmin}>
-                        <ItineraryDayColumn
-                            days={days}
-                            selectedDayIndex={selectedDayIndex}
-                            messages={t}
-                            onSelectDay={(index) => setSelectedDayIndex(index)}
-                            onDeleteDay={openDeleteDayModal}
-                            onAddDayBeforeFirst={handleAddDayBeforeFirst}
-                            onAddDayAfterLast={handleAddDayAfterLast}
-                            onReorder={handleDayDragEnd}
-                        />
-                        <ItineraryTimelineColumn
-                            selectedDay={selectedDay}
-                            selectedItemId={selectedItemId}
-                            items={items}
-                            messages={t}
-                            onAddFirstItem={handleAddFirstItem}
-                            onSelectItem={setSelectedItemId}
-                            onDeleteItem={openDeleteItemModal}
-                            onInsertItem={handleInsertItem}
-                            onEditDay={openEditDayModal}
-                        />
-                        <div className={styles.detailColumn}>
-                            <FormProvider {...form}>
-                                <ItineraryItemEditor
-                                    t={t}
-                                    selectedItem={selectedItem}
-                                    selectedDay={selectedDay}
-                                    isDirty={isItemsDirty}
-                                    isSaving={isSavingTrip}
-                                    errorText={tripSaveError}
-                                    onSave={handleSaveItems}
-                                    onDelete={() => openDeleteItemModal()}
-                                    updateSelectedItem={updateSelectedItem}
+                    <div className={styles.contentArea}>
+                        {!hasDays ? (
+                            <ItineraryEmptyState
+                                title={t.labels.emptyTitle}
+                                body={t.labels.emptyBody}
+                                addLabel={t.labels.addDay}
+                                onAdd={handleAddFirstDay}
+                            />
+                        ) : (
+                            <div className={styles.desktopLayoutAdmin}>
+                                <ItineraryDayColumn
+                                    days={days}
+                                    selectedDayIndex={selectedDayIndex}
+                                    messages={t}
+                                    onSelectDay={(index) =>
+                                        setSelectedDayIndex(index)
+                                    }
+                                    onDeleteDay={openDeleteDayModal}
+                                    onAddDayBeforeFirst={
+                                        handleAddDayBeforeFirst
+                                    }
+                                    onAddDayAfterLast={handleAddDayAfterLast}
+                                    onReorder={handleDayDragEnd}
                                 />
-                            </FormProvider>
-                        </div>
+                                <ItineraryTimelineColumn
+                                    selectedDay={selectedDay}
+                                    selectedItemId={selectedItemId}
+                                    items={items}
+                                    messages={t}
+                                    onAddFirstItem={handleAddFirstItem}
+                                    onSelectItem={setSelectedItemId}
+                                    onDeleteItem={openDeleteItemModal}
+                                    onInsertItem={handleInsertItem}
+                                    onEditDay={openEditDayModal}
+                                />
+                                <div className={styles.detailColumn}>
+                                    <FormProvider {...form}>
+                                        <ItineraryItemEditor
+                                            t={t}
+                                            selectedItem={selectedItem}
+                                            selectedDay={selectedDay}
+                                            isDirty={isItemsDirty}
+                                            isSaving={isSavingTrip}
+                                            errorText={tripSaveError}
+                                            onSave={handleSaveItems}
+                                            onDelete={() =>
+                                                openDeleteItemModal()
+                                            }
+                                            updateSelectedItem={
+                                                updateSelectedItem
+                                            }
+                                        />
+                                    </FormProvider>
+                                </div>
+                            </div>
+                        )}
                     </div>
-                )}
-            </div>
-            <EditDayDateModal
-                isOpen={isEditDayModalOpen}
-                date={
-                    selectedDay
-                        ? `${new Date(selectedDay.date).getFullYear()}-${String(
-                              new Date(selectedDay.date).getMonth() + 1,
-                          ).padStart(2, '0')}-${String(
-                              new Date(selectedDay.date).getDate(),
-                          ).padStart(2, '0')}`
-                        : ''
-                }
-                labels={{
-                    title: t.dayEditModal.title,
-                    dateLabel: t.dayEditModal.dateLabel,
-                    cancel: t.dayEditModal.cancel,
-                    save: t.dayEditModal.save,
-                }}
-                requiredMessage={t.validation.required}
-                invalidMessage={t.validation.dateInvalid}
-                onClose={closeEditDayModal}
-                onSave={handleUpdateDayDate}
-            />
-            <EditTripModal
-                isOpen={isEditTripModalOpen}
-                title={tripTitle}
-                slug={tripSlug}
-                labels={{
-                    title: t.tripModal.title,
-                    nameLabel: t.tripModal.nameLabel,
-                    slugLabel: t.tripModal.slugLabel,
-                    cancel: t.tripModal.cancel,
-                    save: t.tripModal.save,
-                }}
-                requiredMessage={t.validation.required}
-                onClose={closeEditTripModal}
-                onSave={handleTripMetaSave}
-            />
-            <ConfirmModal
-                isOpen={Boolean(confirmPayload)}
-                title={confirmPayload?.title ?? ''}
-                body={confirmPayload?.body ?? ''}
-                cancelLabel={confirmPayload?.cancelLabel ?? ''}
-                confirmLabel={confirmPayload?.confirmLabel ?? ''}
-                confirmingLabel={confirmPayload?.confirmingLabel}
-                isConfirming={isConfirming}
-                onCancel={closeConfirmModal}
-                onConfirm={handleConfirm}
-            />
-        </section>
+                    <EditDayDateModal
+                        isOpen={isEditDayModalOpen}
+                        date={
+                            selectedDay
+                                ? `${new Date(selectedDay.date).getFullYear()}-${String(
+                                      new Date(selectedDay.date).getMonth() + 1,
+                                  ).padStart(2, '0')}-${String(
+                                      new Date(selectedDay.date).getDate(),
+                                  ).padStart(2, '0')}`
+                                : ''
+                        }
+                        labels={{
+                            title: t.dayEditModal.title,
+                            dateLabel: t.dayEditModal.dateLabel,
+                            cancel: t.dayEditModal.cancel,
+                            save: t.dayEditModal.save,
+                        }}
+                        requiredMessage={t.validation.required}
+                        invalidMessage={t.validation.dateInvalid}
+                        onClose={closeEditDayModal}
+                        onSave={handleUpdateDayDate}
+                    />
+                    <EditTripModal
+                        isOpen={isEditTripModalOpen}
+                        title={tripTitle}
+                        slug={tripSlug}
+                        labels={{
+                            title: t.tripModal.title,
+                            nameLabel: t.tripModal.nameLabel,
+                            slugLabel: t.tripModal.slugLabel,
+                            cancel: t.tripModal.cancel,
+                            save: t.tripModal.save,
+                        }}
+                        requiredMessage={t.validation.required}
+                        onClose={closeEditTripModal}
+                        onSave={handleTripMetaSave}
+                    />
+                    <ConfirmModal
+                        isOpen={Boolean(confirmPayload)}
+                        title={confirmPayload?.title ?? ''}
+                        body={confirmPayload?.body ?? ''}
+                        cancelLabel={confirmPayload?.cancelLabel ?? ''}
+                        confirmLabel={confirmPayload?.confirmLabel ?? ''}
+                        confirmingLabel={confirmPayload?.confirmingLabel}
+                        isConfirming={isConfirming}
+                        onCancel={closeConfirmModal}
+                        onConfirm={handleConfirm}
+                    />
+                </section>
+            )}
+        </UnsavedChangesGuard>
     );
 }

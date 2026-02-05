@@ -203,7 +203,7 @@
     border: none;
     border-radius: 0.5rem;
     background: var(--primary-500);
-    color: var(--primary-800);
+    color: white;
     font-size: 0.85rem;
 }
 
@@ -373,13 +373,6 @@
 .errorText {
     color: #c62828;
     font-size: 0.75rem;
-}
-
-.emptyCard {
-    padding: 1.5rem;
-    border-radius: 1rem;
-    border: 1px dashed var(--primary-300);
-    background: var(--primary-100);
 }
 
 .emptyText {

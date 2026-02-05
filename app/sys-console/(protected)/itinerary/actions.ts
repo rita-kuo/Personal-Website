@@ -85,6 +85,7 @@ type DeleteTripResult = {
 type CreateTripPayload = {
     title: string;
     departureTitle: string;
+    startDate: string;
 };
 
 type CreateDayPayload = {
@@ -561,11 +562,25 @@ export async function deleteItineraryTrip(
 
 export async function createItineraryTrip(payload: CreateTripPayload) {
     const slug = `trip-${Date.now()}`;
+    const dayDate = startOfDate(payload.startDate);
+    if (!dayDate) return { error: 'INVALID_DATE' };
 
     const trip = await prisma.itineraryTrip.create({
         data: {
             title: payload.title,
             slug,
+            days: {
+                create: {
+                    date: dayDate,
+                    items: {
+                        create: {
+                            title: payload.departureTitle,
+                            startTime: combineDateAndTime(dayDate, '08:00'),
+                            endTime: null,
+                        },
+                    },
+                },
+            },
         },
         include: {
             days: {

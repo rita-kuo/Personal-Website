@@ -54,19 +54,21 @@
 
 .title {
     margin: 0;
-    color: var(--primary-900);
+    color: var(--secondary-700);
 }
 
 .closeButton {
-    border: 1px solid var(--primary-300);
-    background: var(--primary-100);
     color: var(--primary-800);
+    font-weight: bold;
     width: 2.2rem;
     height: 2.2rem;
-    border-radius: 999px;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
+    padding: 0;
+    background: none;
+    border: none;
+}
+
+.closeButton:hover {
+    color: var(--primary-500);
 }
 
 .form {
@@ -78,7 +80,6 @@
 .formLabel {
     display: flex;
     flex-direction: column;
-    gap: 0.35rem;
     font-size: 0.85rem;
     color: var(--primary-800);
 }
@@ -100,15 +101,16 @@
 
 .primaryButton,
 .secondaryButton {
-    padding: 0.5rem 1.25rem;
-    border-radius: 999px;
-    border: 1px solid var(--primary-500);
+    padding: 0.25rem 0.75rem;
+    min-width: max-content;
+    border-radius: 0.5rem;
+    border: 1px solid var(--secondary-500);
     font-size: 0.85rem;
     cursor: pointer;
 }
 
 .primaryButton {
-    background: var(--primary-500);
+    background: var(--secondary-500);
     color: #ffffff;
 }
 
