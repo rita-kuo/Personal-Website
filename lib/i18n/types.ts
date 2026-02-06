@@ -86,6 +86,7 @@ export type ItineraryAdminMessages = {
             required: string;
             invalidUrl: string;
             endBeforeStart: string;
+            timeInvalid: string;
             tooLong: string;
             dateDuplicate: string;
             dateInvalid: string;

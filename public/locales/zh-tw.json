@@ -186,6 +186,7 @@
                 "required": "此欄位為必填",
                 "invalidUrl": "請輸入有效的網址",
                 "endBeforeStart": "結束時間需晚於開始時間",
+                "timeInvalid": "請使用 24 小時制（HH:mm）",
                 "tooLong": "內容過長",
                 "dateDuplicate": "這一天已存在",
                 "dateInvalid": "日期格式不正確",

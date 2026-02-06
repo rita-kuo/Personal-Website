@@ -48,6 +48,7 @@ type ItineraryItemEditorProps = {
             required: string;
             invalidUrl: string;
             endBeforeStart: string;
+            timeInvalid: string;
             tooLong: string;
         };
     };
@@ -61,12 +62,12 @@ type ItineraryItemEditorProps = {
     updateSelectedItem: (updates: Partial<ItineraryItem>) => void;
 };
 
-const mergeDateAndTime = (dateValue: string, timeValue: string) => {
-    const [hours, minutes] = timeValue.split(':').map(Number);
-    if (Number.isNaN(hours) || Number.isNaN(minutes)) return null;
-    const combined = new Date(dateValue);
-    combined.setHours(hours, minutes, 0, 0);
-    return combined.toISOString();
+const isValidTime = (value: string) => /^([01]\d|2[0-3]):[0-5]\d$/.test(value);
+
+const toMinutes = (value: string) => {
+    if (!isValidTime(value)) return null;
+    const [hours, minutes] = value.split(':').map(Number);
+    return hours * 60 + minutes;
 };
 
 const isValidUrl = (value: string) =>
@@ -75,7 +76,6 @@ const isValidUrl = (value: string) =>
 export default function ItineraryItemEditor({
     t,
     selectedItem,
-    selectedDay,
     isDirty,
     isSaving,
     errorText,
@@ -140,22 +140,16 @@ export default function ItineraryItemEditor({
                         <label className={styles.formLabel}>
                             {t.labels.timeStart}
                             <input
-                                type='time'
+                                type='text'
+                                inputMode='numeric'
+                                autoComplete='off'
                                 className={styles.input}
                                 {...register('startTime', {
                                     required: t.validation.required,
-                                    onChange: (event) => {
-                                        if (!selectedDay) return;
-                                        const merged = mergeDateAndTime(
-                                            selectedDay.date,
-                                            event.target.value,
-                                        );
-                                        if (merged) {
-                                            updateSelectedItem({
-                                                startTime: merged,
-                                            });
-                                        }
-                                    },
+                                    validate: (value) =>
+                                        isValidTime(value) ||
+                                        t.validation.timeInvalid,
+                                    onChange: () => updateSelectedItem({}),
                                 })}
                             />
                             {errors.startTime && (
@@ -167,36 +161,31 @@ export default function ItineraryItemEditor({
                         <label className={styles.formLabel}>
                             {t.labels.timeEnd}
                             <input
-                                type='time'
+                                type='text'
+                                inputMode='numeric'
+                                autoComplete='off'
                                 className={styles.input}
                                 {...register('endTime', {
                                     validate: (value) => {
                                         if (!value) return true;
+                                        if (!isValidTime(value)) {
+                                            return t.validation.timeInvalid;
+                                        }
                                         const start = getValues('startTime');
-                                        if (start && value < start) {
+                                        const startMinutes = start
+                                            ? toMinutes(start)
+                                            : null;
+                                        const endMinutes = toMinutes(value);
+                                        if (
+                                            startMinutes !== null &&
+                                            endMinutes !== null &&
+                                            endMinutes < startMinutes
+                                        ) {
                                             return t.validation.endBeforeStart;
                                         }
                                         return true;
                                     },
-                                    onChange: (event) => {
-                                        if (!selectedDay) return;
-                                        const value = event.target.value;
-                                        if (!value) {
-                                            updateSelectedItem({
-                                                endTime: null,
-                                            });
-                                            return;
-                                        }
-                                        const merged = mergeDateAndTime(
-                                            selectedDay.date,
-                                            value,
-                                        );
-                                        if (merged) {
-                                            updateSelectedItem({
-                                                endTime: merged,
-                                            });
-                                        }
-                                    },
+                                    onChange: () => updateSelectedItem({}),
                                 })}
                             />
                             {errors.endTime && (

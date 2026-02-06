@@ -178,6 +178,7 @@
                 "required": "This field is required",
                 "invalidUrl": "Please enter a valid URL",
                 "endBeforeStart": "End time must be after start time",
+                "timeInvalid": "Use 24-hour format (HH:mm)",
                 "tooLong": "Text is too long",
                 "dateDuplicate": "This date already exists",
                 "dateInvalid": "Invalid date",
