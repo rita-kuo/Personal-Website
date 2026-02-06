@@ -19,8 +19,6 @@ type ItineraryListMessages = {
     list: {
         empty: string;
         viewTrip: string;
-        startLabel: string;
-        endLabel: string;
     };
 };
 
@@ -46,7 +44,7 @@ export default function ItineraryTripList({ trips, messages, locale }: Props) {
     const fallback = messages.labels.notAvailable;
 
     return (
-        <main className={`container ${styles.page}`}>
+        <>
             <header className={styles.header}>
                 <h1 className={styles.pageTitle}>{messages.title}</h1>
             </header>
@@ -74,18 +72,7 @@ export default function ItineraryTripList({ trips, messages, locale }: Props) {
                                         {trip.title}
                                     </h2>
                                     <div className={styles.tripMeta}>
-                                        <span className={styles.tripMetaLabel}>
-                                            {messages.list.startLabel}
-                                        </span>
-                                        <span className={styles.tripMetaValue}>
-                                            {startText}
-                                        </span>
-                                        <span className={styles.tripMetaLabel}>
-                                            {messages.list.endLabel}
-                                        </span>
-                                        <span className={styles.tripMetaValue}>
-                                            {endText}
-                                        </span>
+                                        {startText} - {endText}
                                     </div>
                                 </div>
                                 <div className={styles.tripAction}>
@@ -106,6 +93,6 @@ export default function ItineraryTripList({ trips, messages, locale }: Props) {
                     <p className={styles.emptyText}>{messages.list.empty}</p>
                 </article>
             )}
-        </main>
+        </>
     );
 }

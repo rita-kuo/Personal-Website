@@ -12,9 +12,7 @@
         },
         "list": {
             "empty": "目前沒有行程資料。",
-            "viewTrip": "查看行程",
-            "startLabel": "開始",
-            "endLabel": "結束"
+            "viewTrip": "查看行程"
         },
         "labels": {
             "time": "時間",

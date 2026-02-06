@@ -12,9 +12,7 @@
         },
         "list": {
             "empty": "No itineraries yet.",
-            "viewTrip": "View itinerary",
-            "startLabel": "Start",
-            "endLabel": "End"
+            "viewTrip": "View itinerary"
         },
         "labels": {
             "time": "Time",

@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useState } from 'react';
 import styles from '../itinerary.module.css';
+import Link from 'next/link';
 
 type ItineraryItem = {
     id: number;
@@ -136,7 +137,7 @@ export default function ItineraryTimeline({ messages, days }: Props) {
 
     return (
         <main className={`container ${styles.page}`}>
-            <header className={styles.header}>
+            <header className={styles.detailHeader}>
                 <h1 className={styles.pageTitle}>{messages.title}</h1>
                 <div className={styles.daySwitch}>
                     <button
@@ -198,342 +199,98 @@ export default function ItineraryTimeline({ messages, days }: Props) {
                     </p>
                 </article>
             ) : (
-                <>
-                    <section className={styles.mobileTimeline}>
-                        <ol className={styles.timelineList}>
-                            {items.map((item, index) => (
-                                <li
-                                    key={item.id}
-                                    className={styles.timelineItem}
-                                >
-                                    <article className={styles.card}>
-                                        <div className={styles.cardHeader}>
-                                            <span className={styles.timeText}>
-                                                {formatTimeRange(item)}
-                                            </span>
-                                            <h2 className={styles.itemTitle}>
-                                                {item.title}
-                                            </h2>
-                                        </div>
-                                        <div className={styles.linkGroup}>
+                <ol className={`${styles.timelineList} ${styles.compactList}`}>
+                    {items.map((item, index) => (
+                        <li key={item.id} className={styles.timelineItem}>
+                            <div className={styles.itemInfo}>
+                                <span>{item.title}</span>
+                                <div className={styles.details}>
+                                    <div className={styles.baseInfo}>
+                                        <span className={styles.time}>
+                                            {formatTimeRange(item)}
+                                        </span>
+                                        <div className={styles.links}>
                                             {item.location && (
-                                                <a
+                                                <Link
                                                     href={item.location}
+                                                    className={styles.linkIcon}
                                                     target='_blank'
                                                     rel='noreferrer'
-                                                    className={styles.linkPill}
                                                     aria-label={
                                                         messages.aria.location
                                                     }
                                                 >
                                                     <i
-                                                        className={`ri-map-pin-line ${styles.pillIcon}`}
-                                                        aria-hidden='true'
+                                                        className='ri-map-pin-line'
+                                                        aria-label={
+                                                            messages.aria
+                                                                .location
+                                                        }
                                                     />
-                                                    {messages.labels.location}
-                                                </a>
+                                                </Link>
                                             )}
                                             {item.parking && (
-                                                <a
+                                                <Link
                                                     href={item.parking}
+                                                    className={styles.linkIcon}
                                                     target='_blank'
                                                     rel='noreferrer'
-                                                    className={styles.linkPill}
                                                     aria-label={
                                                         messages.aria.parking
                                                     }
                                                 >
                                                     <i
-                                                        className={`ri-parking-line ${styles.pillIcon}`}
-                                                        aria-hidden='true'
+                                                        className='ri-parking-box-line'
+                                                        aria-label={
+                                                            messages.aria
+                                                                .parking
+                                                        }
                                                     />
-                                                    {messages.labels.parking}
-                                                </a>
+                                                </Link>
                                             )}
                                             {item.contact && (
-                                                <a
+                                                <Link
                                                     href={item.contact}
+                                                    className={styles.linkIcon}
                                                     target='_blank'
                                                     rel='noreferrer'
-                                                    className={styles.linkPill}
                                                     aria-label={
                                                         messages.aria.contact
                                                     }
                                                 >
                                                     <i
-                                                        className={`ri-message-3-line ${styles.pillIcon}`}
-                                                        aria-hidden='true'
+                                                        className='ri-contacts-line'
+                                                        aria-label={
+                                                            messages.aria
+                                                                .contact
+                                                        }
                                                     />
-                                                    {messages.labels.contact}
-                                                </a>
+                                                </Link>
                                             )}
-                                            {!item.location &&
-                                                !item.parking &&
-                                                !item.contact && (
-                                                    <span
-                                                        className={
-                                                            styles.linkPlaceholder
-                                                        }
-                                                    >
-                                                        {
-                                                            messages.labels
-                                                                .noLinks
-                                                        }
-                                                    </span>
-                                                )}
                                         </div>
-                                        {item.memo ? (
-                                            <details className={styles.memo}>
-                                                <summary
-                                                    className={
-                                                        styles.memoSummary
-                                                    }
-                                                >
-                                                    {messages.labels.memo}
-                                                </summary>
-                                                <p className={styles.memoText}>
-                                                    {item.memo}
-                                                </p>
-                                            </details>
-                                        ) : (
-                                            <p className={styles.noMemoText}>
-                                                {messages.labels.noMemo}
-                                            </p>
-                                        )}
-                                    </article>
-                                    {index < items.length - 1 && (
-                                        <div
-                                            className={styles.connector}
-                                            aria-hidden='true'
-                                        >
-                                            <span
-                                                className={styles.connectorLine}
-                                            />
-                                            <i
-                                                className={`ri-car-line ${styles.carIcon}`}
-                                            />
-                                            <span
-                                                className={styles.connectorLine}
-                                            />
-                                        </div>
+                                    </div>
+                                    {item.memo && (
+                                        <article className={styles.detailCard}>
+                                            {item.memo}
+                                        </article>
                                     )}
-                                </li>
-                            ))}
-                        </ol>
-                    </section>
-
-                    <section className={styles.desktopLayout}>
-                        <div className={styles.timelineColumn}>
-                            <ol
-                                className={`${styles.timelineList} ${styles.compactList}`}
-                            >
-                                {items.map((item, index) => {
-                                    const isSelected =
-                                        item.id === selectedItemId;
-                                    const isDisabled = !item.memo;
-
-                                    return (
-                                        <li
-                                            key={item.id}
-                                            className={styles.timelineItem}
-                                        >
-                                            <button
-                                                type='button'
-                                                className={`${
-                                                    styles.compactButton
-                                                } ${
-                                                    isSelected
-                                                        ? styles.isSelected
-                                                        : ''
-                                                } ${
-                                                    isDisabled
-                                                        ? styles.isDisabled
-                                                        : ''
-                                                }`}
-                                                onClick={() =>
-                                                    !isDisabled &&
-                                                    setSelectedItemId(item.id)
-                                                }
-                                                disabled={isDisabled}
-                                            >
-                                                <span
-                                                    className={
-                                                        styles.compactTitle
-                                                    }
-                                                >
-                                                    {item.title}
-                                                </span>
-                                                <span
-                                                    className={
-                                                        styles.compactTime
-                                                    }
-                                                >
-                                                    {formatTimeRange(item)}
-                                                </span>
-                                            </button>
-                                            {index < items.length - 1 && (
-                                                <div
-                                                    className={
-                                                        styles.connectorCompact
-                                                    }
-                                                    aria-hidden='true'
-                                                >
-                                                    <span
-                                                        className={
-                                                            styles.connectorLine
-                                                        }
-                                                    />
-                                                    <i
-                                                        className={`ri-car-line ${styles.carIcon}`}
-                                                    />
-                                                    <span
-                                                        className={
-                                                            styles.connectorLine
-                                                        }
-                                                    />
-                                                </div>
-                                            )}
-                                        </li>
-                                    );
-                                })}
-                            </ol>
-                        </div>
-                        <div className={styles.detailColumn}>
-                            {selectedItem ? (
-                                <article
-                                    className={`${styles.card} ${styles.detailCard}`}
+                                </div>
+                            </div>
+                            {index < items.length - 1 && (
+                                <div
+                                    className={styles.connectorCompact}
+                                    aria-hidden='true'
                                 >
-                                    <h2 className={styles.detailTitle}>
-                                        {messages.labels.detailTitle}
-                                    </h2>
-                                    <div className={styles.detailRow}>
-                                        <span className={styles.detailLabel}>
-                                            {messages.labels.time}
-                                        </span>
-                                        <span className={styles.detailValue}>
-                                            {formatTimeRange(selectedItem)}
-                                        </span>
-                                    </div>
-                                    <div className={styles.detailRow}>
-                                        <span className={styles.detailLabel}>
-                                            {messages.labels.location}
-                                        </span>
-                                        <span className={styles.detailValue}>
-                                            {selectedItem.location ? (
-                                                <a
-                                                    href={selectedItem.location}
-                                                    target='_blank'
-                                                    rel='noreferrer'
-                                                    className={styles.textLink}
-                                                    aria-label={
-                                                        messages.aria.location
-                                                    }
-                                                >
-                                                    {messages.labels.location}
-                                                </a>
-                                            ) : (
-                                                <span
-                                                    className={styles.mutedText}
-                                                >
-                                                    {
-                                                        messages.labels
-                                                            .notAvailable
-                                                    }
-                                                </span>
-                                            )}
-                                        </span>
-                                    </div>
-                                    <div className={styles.detailRow}>
-                                        <span className={styles.detailLabel}>
-                                            {messages.labels.parking}
-                                        </span>
-                                        <span className={styles.detailValue}>
-                                            {selectedItem.parking ? (
-                                                <a
-                                                    href={selectedItem.parking}
-                                                    target='_blank'
-                                                    rel='noreferrer'
-                                                    className={styles.textLink}
-                                                    aria-label={
-                                                        messages.aria.parking
-                                                    }
-                                                >
-                                                    {messages.labels.parking}
-                                                </a>
-                                            ) : (
-                                                <span
-                                                    className={styles.mutedText}
-                                                >
-                                                    {
-                                                        messages.labels
-                                                            .notAvailable
-                                                    }
-                                                </span>
-                                            )}
-                                        </span>
-                                    </div>
-                                    <div className={styles.detailRow}>
-                                        <span className={styles.detailLabel}>
-                                            {messages.labels.contact}
-                                        </span>
-                                        <span className={styles.detailValue}>
-                                            {selectedItem.contact ? (
-                                                <a
-                                                    href={selectedItem.contact}
-                                                    target='_blank'
-                                                    rel='noreferrer'
-                                                    className={styles.textLink}
-                                                    aria-label={
-                                                        messages.aria.contact
-                                                    }
-                                                >
-                                                    {messages.labels.contact}
-                                                </a>
-                                            ) : (
-                                                <span
-                                                    className={styles.mutedText}
-                                                >
-                                                    {
-                                                        messages.labels
-                                                            .notAvailable
-                                                    }
-                                                </span>
-                                            )}
-                                        </span>
-                                    </div>
-                                    <div className={styles.detailRow}>
-                                        <span className={styles.detailLabel}>
-                                            {messages.labels.memo}
-                                        </span>
-                                        <span className={styles.detailValue}>
-                                            {selectedItem.memo ? (
-                                                <span
-                                                    className={
-                                                        styles.memoParagraph
-                                                    }
-                                                >
-                                                    {selectedItem.memo}
-                                                </span>
-                                            ) : (
-                                                <span
-                                                    className={styles.mutedText}
-                                                >
-                                                    {messages.labels.noMemo}
-                                                </span>
-                                            )}
-                                        </span>
-                                    </div>
-                                </article>
-                            ) : (
-                                <article className={styles.emptyCard}>
-                                    <p className={styles.emptyText}>
-                                        {messages.labels.emptySelection}
-                                    </p>
-                                </article>
+                                    <span className={styles.connectorLine} />
+                                    <i
+                                        className={`ri-car-line ${styles.carIcon}`}
+                                    />
+                                    <span className={styles.connectorLine} />
+                                </div>
                             )}
-                        </div>
-                    </section>
-                </>
+                        </li>
+                    ))}
+                </ol>
             )}
         </main>
     );
