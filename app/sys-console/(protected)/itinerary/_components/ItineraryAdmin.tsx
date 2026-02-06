@@ -66,6 +66,14 @@ const getDefaultSelectionId = (day: ItineraryDay) => {
     return day.items[0]?.id ?? null;
 };
 
+const mergeDateAndTime = (dateValue: string, timeValue: string) => {
+    const [hours, minutes] = timeValue.split(':').map(Number);
+    if (Number.isNaN(hours) || Number.isNaN(minutes)) return null;
+    const combined = new Date(dateValue);
+    combined.setHours(hours, minutes, 0, 0);
+    return combined.toISOString();
+};
+
 export default function ItineraryAdmin({
     messages,
     days: initialDays,
@@ -142,7 +150,7 @@ export default function ItineraryAdmin({
         mode: 'onChange',
     });
 
-    const { reset } = form;
+    const { reset, getValues } = form;
 
     useEffect(() => {
         if (!selectedItem) return;
@@ -162,41 +170,63 @@ export default function ItineraryAdmin({
         setTripSaveError('');
     }, [selectedDayIndex, selectedItemId]);
 
-    const updateSelectedItem = useCallback(
-        (updates: Partial<ItineraryItem>) => {
-            if (!selectedDay || !selectedItemId) return;
-            setDays((prev) =>
-                prev.map((day) => {
-                    if (day.id !== selectedDay.id) return day;
-                    const nextItems = day.items.map((item) =>
-                        item.id === selectedItemId
-                            ? { ...item, ...updates }
-                            : item,
-                    );
-                    const sorted = [...nextItems].sort(
-                        (a, b) =>
-                            new Date(a.startTime).getTime() -
-                            new Date(b.startTime).getTime(),
-                    );
-                    return { ...day, items: sorted };
-                }),
-            );
+    const updateSelectedItem = useCallback(() => {
+        if (!selectedDay || !selectedItemId) return;
+        if (!isItemsDirty) {
             setIsItemsDirty(true);
-            setTripSaveError('');
-        },
-        [selectedDay, selectedItemId],
-    );
+        }
+        setTripSaveError('');
+    }, [isItemsDirty, selectedDay, selectedItemId]);
+
+    const getUpdatedDays = useCallback(() => {
+        if (!selectedDay || !selectedItem) return days;
+        const values = getValues();
+        const mergedStart = mergeDateAndTime(
+            selectedDay.date,
+            values.startTime,
+        );
+        const mergedEnd = values.endTime
+            ? mergeDateAndTime(selectedDay.date, values.endTime)
+            : null;
+
+        const nextItem: ItineraryItem = {
+            ...selectedItem,
+            title: values.title ?? '',
+            startTime: mergedStart ?? selectedItem.startTime,
+            endTime: values.endTime
+                ? (mergedEnd ?? selectedItem.endTime)
+                : null,
+            location: values.location || null,
+            parking: values.parking || null,
+            contact: values.contact || null,
+            memo: values.memo || null,
+        };
+
+        return days.map((day) => {
+            if (day.id !== selectedDay.id) return day;
+            const nextItems = day.items.map((item) =>
+                item.id === selectedItem.id ? nextItem : item,
+            );
+            const sorted = [...nextItems].sort(
+                (a, b) =>
+                    new Date(a.startTime).getTime() -
+                    new Date(b.startTime).getTime(),
+            );
+            return { ...day, items: sorted };
+        });
+    }, [days, getValues, selectedDay, selectedItem]);
 
     const handleSaveItems = useCallback(async () => {
         if (!isItemsDirty) return;
         setIsSavingTrip(true);
         setTripSaveError('');
 
+        const nextDays = getUpdatedDays();
         const result = await saveItineraryTrip({
             tripId,
             title: tripTitle,
             slug: tripSlug,
-            days,
+            days: nextDays,
         });
 
         setIsSavingTrip(false);
@@ -216,7 +246,14 @@ export default function ItineraryAdmin({
             setTripSlug(result.trip.slug);
             setIsItemsDirty(false);
         }
-    }, [days, isItemsDirty, tripId, tripSlug, tripTitle, t.validation]);
+    }, [
+        getUpdatedDays,
+        isItemsDirty,
+        tripId,
+        tripSlug,
+        tripTitle,
+        t.validation,
+    ]);
 
     const handleInsertItem = async (afterItemId: number) => {
         if (!selectedDay) return;
