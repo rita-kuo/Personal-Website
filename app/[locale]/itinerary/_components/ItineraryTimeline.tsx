@@ -281,11 +281,9 @@ export default function ItineraryTimeline({ messages, days }: Props) {
                                     className={styles.connectorCompact}
                                     aria-hidden='true'
                                 >
-                                    <span className={styles.connectorLine} />
                                     <i
                                         className={`ri-car-line ${styles.carIcon}`}
                                     />
-                                    <span className={styles.connectorLine} />
                                 </div>
                             )}
                         </li>
