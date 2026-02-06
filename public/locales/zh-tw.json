@@ -10,6 +10,12 @@
             "next": "後一天",
             "label": "選擇日期"
         },
+        "list": {
+            "empty": "目前沒有行程資料。",
+            "viewTrip": "查看行程",
+            "startLabel": "開始",
+            "endLabel": "結束"
+        },
         "labels": {
             "time": "時間",
             "location": "地點",

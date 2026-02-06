@@ -27,6 +27,7 @@ type ItineraryTripDTO = {
 type ItineraryTripListItemDTO = {
     id: number;
     title: string;
+    slug: string;
     startDate: string | null;
     endDate: string | null;
 };
@@ -88,10 +89,51 @@ export async function getItineraryTrips(): Promise<ItineraryTripListItemDTO[]> {
         return {
             id: trip.id,
             title: trip.title,
+            slug: trip.slug,
             startDate: toIso(firstDay),
             endDate: toIso(lastDay),
         };
     });
+}
+
+export async function getItineraryTripBySlug(
+    slug: string,
+): Promise<ItineraryTripDTO | null> {
+    const trip = await prisma.itineraryTrip.findUnique({
+        where: { slug },
+        include: {
+            days: {
+                orderBy: [{ date: 'asc' }],
+                include: {
+                    items: {
+                        orderBy: [{ startTime: 'asc' }],
+                    },
+                },
+            },
+        },
+    });
+
+    if (!trip) return null;
+
+    return {
+        id: trip.id,
+        title: trip.title,
+        slug: trip.slug,
+        days: trip.days.map((day: (typeof trip.days)[number]) => ({
+            id: day.id,
+            date: day.date.toISOString(),
+            items: day.items.map((item: (typeof day.items)[number]) => ({
+                id: item.id,
+                title: item.title,
+                startTime: item.startTime.toISOString(),
+                endTime: toIso(item.endTime),
+                location: item.location,
+                parking: item.parking,
+                contact: item.contact,
+                memo: item.memo,
+            })),
+        })),
+    };
 }
 
 export async function getItineraryTripById(

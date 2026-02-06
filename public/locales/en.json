@@ -10,6 +10,12 @@
             "next": "Next day",
             "label": "Select a day"
         },
+        "list": {
+            "empty": "No itineraries yet.",
+            "viewTrip": "View itinerary",
+            "startLabel": "Start",
+            "endLabel": "End"
+        },
         "labels": {
             "time": "Time",
             "location": "Location",
