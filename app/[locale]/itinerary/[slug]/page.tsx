@@ -29,5 +29,5 @@ export default async function ItineraryDetailPage({ params }: Props) {
         notFound();
     }
 
-    return <ItineraryTimeline messages={messages as any} days={trip.days} />;
+    return <ItineraryTimeline messages={messages as any} trip={trip} />;
 }

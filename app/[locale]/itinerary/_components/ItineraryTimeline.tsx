@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import styles from '../itinerary.module.css';
 import Link from 'next/link';
+import { ItineraryTripDTO } from '@/lib/itinerary';
 
 type ItineraryItem = {
     id: number;
@@ -57,7 +58,7 @@ type ItineraryMessages = {
 
 type Props = {
     messages: ItineraryMessages;
-    days: ItineraryDay[];
+    trip: ItineraryTripDTO;
 };
 
 const formatTime = (value: string | null | undefined) => {
@@ -99,11 +100,12 @@ const formatTimeRange = (item: ItineraryItem) => {
     return `${startTime} - ${endTime}`;
 };
 
-export default function ItineraryTimeline({ messages, days }: Props) {
+export default function ItineraryTimeline({ messages, trip }: Props) {
     const weekdayLabels = useMemo(
         () => messages?.labels?.weekdays ?? [],
         [messages],
     );
+    const days = trip.days ?? [];
     const hasDays = days.length > 0;
     const [selectedDayIndex, setSelectedDayIndex] = useState(0);
     const [selectedItemId, setSelectedItemId] = useState<number | null>(null);
@@ -114,7 +116,7 @@ export default function ItineraryTimeline({ messages, days }: Props) {
             setSelectedDayIndex(0);
             return;
         }
-        if (selectedDayIndex > days.length - 1) {
+        if (selectedDayIndex > trip.days.length - 1) {
             setSelectedDayIndex(0);
             return;
         }
@@ -137,8 +139,9 @@ export default function ItineraryTimeline({ messages, days }: Props) {
 
     return (
         <main className={`container ${styles.page}`}>
+            <h1 className={styles.pageTitle}>{trip.title}</h1>
             <header className={styles.detailHeader}>
-                <h1 className={styles.pageTitle}>{messages.title}</h1>
+                <h1 className={styles.pageTitle}>{trip.title}</h1>
                 <div className={styles.daySwitch}>
                     <button
                         type='button'
@@ -199,7 +202,7 @@ export default function ItineraryTimeline({ messages, days }: Props) {
                     </p>
                 </article>
             ) : (
-                <ol className={`${styles.timelineList} ${styles.compactList}`}>
+                <ol className={styles.timelineList}>
                     {items.map((item, index) => (
                         <li key={item.id} className={styles.timelineItem}>
                             <div className={styles.itemInfo}>

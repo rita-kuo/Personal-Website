@@ -17,7 +17,7 @@ type ItineraryDayDTO = {
     items: ItineraryItemDTO[];
 };
 
-type ItineraryTripDTO = {
+export type ItineraryTripDTO = {
     id: number;
     title: string;
     slug: string;
