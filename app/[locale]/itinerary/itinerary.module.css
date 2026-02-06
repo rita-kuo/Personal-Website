@@ -302,7 +302,7 @@
     width: 70%;
     margin: 0 auto;
     border-left: 2px dashed var(--primary-300);
-    padding: 0.25rem 0.5rem;
+    padding: 0.5rem 0;
 }
 
 .links {
