@@ -35,8 +35,31 @@
 
 .pageTitle {
     margin: 0;
-    color: var(--secondary-600);
     padding: 1rem 1rem 0 1rem;
+    color: var(--secondary-600);
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.pageTitle > a {
+    color: var(--primary-700);
+}
+
+.pageTitle > a:hover {
+    color: var(--primary-600);
+}
+
+.backLink {
+    color: var(--secondary-600);
+    text-decoration: none;
+    font-size: 1.5rem;
+    display: inline-flex;
+    align-items: center;
+}
+
+.backLink:hover {
+    color: var(--secondary-800);
 }
 
 .tripList {
@@ -145,7 +168,7 @@
 
 .daySelect {
     width: 100%;
-    padding: 0.25rem;
+    padding: 0.25rem 0.5rem;
     border: 2px solid var(--secondary-300);
     background-color: var(--secondary-200);
     border-radius: 10rem;
@@ -470,7 +493,7 @@
 
     .detailHeader > .pageTitle,
     .header > .pageTitle {
-        display: inline;
+        display: flex;
     }
 
     .detailHeader > .pageTitle {

@@ -1,6 +1,7 @@
 'use client';
 
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
+import { usePathname } from 'next/navigation';
 import styles from '../itinerary.module.css';
 import Link from 'next/link';
 import { ItineraryTripDTO } from '@/lib/itinerary';
@@ -100,15 +101,38 @@ const formatTimeRange = (item: ItineraryItem) => {
     return `${startTime} - ${endTime}`;
 };
 
+const isSameDay = (date1: Date, date2: Date) =>
+    date1.getFullYear() === date2.getFullYear() &&
+    date1.getMonth() === date2.getMonth() &&
+    date1.getDate() === date2.getDate();
+
+const getTodayDayIndex = (days: ItineraryDay[]) => {
+    const now = new Date();
+    const index = days.findIndex((day) => isSameDay(new Date(day.date), now));
+    return index >= 0 ? index : 0;
+};
+
+const getCurrentItemId = (day: ItineraryDay) => {
+    const now = new Date();
+    const started = day.items.filter((item) => new Date(item.startTime) <= now);
+    if (started.length > 0) return started[started.length - 1].id;
+    return day.items[0]?.id ?? null;
+};
+
 export default function ItineraryTimeline({ messages, trip }: Props) {
+    const pathname = usePathname();
+    const backHref = pathname.replace(/\/[^/]+$/, '');
     const weekdayLabels = useMemo(
         () => messages?.labels?.weekdays ?? [],
         [messages],
     );
     const days = trip.days ?? [];
     const hasDays = days.length > 0;
-    const [selectedDayIndex, setSelectedDayIndex] = useState(0);
+    const [selectedDayIndex, setSelectedDayIndex] = useState(() =>
+        getTodayDayIndex(days),
+    );
     const [selectedItemId, setSelectedItemId] = useState<number | null>(null);
+    const hasScrolled = useRef(false);
 
     useEffect(() => {
         if (!hasDays) {
@@ -122,6 +146,23 @@ export default function ItineraryTimeline({ messages, trip }: Props) {
         }
         setSelectedItemId(getDefaultSelectionId(days[selectedDayIndex]));
     }, [days, hasDays, selectedDayIndex]);
+
+    const isToday =
+        hasDays &&
+        isSameDay(new Date(days[selectedDayIndex]?.date), new Date());
+
+    useEffect(() => {
+        if (hasScrolled.current || !hasDays || !isToday) return;
+        hasScrolled.current = true;
+        const day = days[selectedDayIndex];
+        if (!day) return;
+        const targetId = getCurrentItemId(day);
+        if (targetId === null) return;
+        requestAnimationFrame(() => {
+            const el = document.querySelector(`[data-item-id="${targetId}"]`);
+            el?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        });
+    }, [days, hasDays, selectedDayIndex, isToday]);
 
     const selectedDay = days[selectedDayIndex];
     const items = selectedDay?.items ?? [];
@@ -139,9 +180,30 @@ export default function ItineraryTimeline({ messages, trip }: Props) {
 
     return (
         <main className={`container ${styles.page}`}>
-            <h1 className={styles.pageTitle}>{trip.title}</h1>
+            <h1 className={styles.pageTitle}>
+                <Link
+                    href={backHref}
+                    className={styles.backLink}
+                    aria-label='Back'
+                >
+                    <i className='ri-arrow-go-back-line' aria-hidden='true' />
+                </Link>
+                <span>{trip.title}</span>
+            </h1>
             <header className={styles.detailHeader}>
-                <h1 className={styles.pageTitle}>{trip.title}</h1>
+                <h1 className={styles.pageTitle}>
+                    <Link
+                        href={backHref}
+                        className={styles.backLink}
+                        aria-label='Back'
+                    >
+                        <i
+                            className='ri-arrow-go-back-line'
+                            aria-hidden='true'
+                        />
+                    </Link>
+                    <span>{trip.title}</span>
+                </h1>
                 <div className={styles.daySwitch}>
                     <button
                         type='button'
@@ -204,7 +266,11 @@ export default function ItineraryTimeline({ messages, trip }: Props) {
             ) : (
                 <ol className={styles.timelineList}>
                     {items.map((item, index) => (
-                        <li key={item.id} className={styles.timelineItem}>
+                        <li
+                            key={item.id}
+                            data-item-id={item.id}
+                            className={styles.timelineItem}
+                        >
                             <div className={styles.itemInfo}>
                                 <span>{item.title}</span>
                                 <div className={styles.details}>
