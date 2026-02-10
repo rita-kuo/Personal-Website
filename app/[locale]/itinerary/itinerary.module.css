@@ -288,6 +288,10 @@
     transition: all 0.2s ease;
 }
 
+.itemInfo > span {
+    font-weight: bold;
+}
+
 .detail {
     display: flex;
     justify-content: space-between;
@@ -356,9 +360,27 @@
     border: 2px dashed var(--secondary-300);
     background-color: var(--secondary-100);
     word-wrap: break-word;
-    white-space: pre-wrap;
     font-size: small;
     flex-grow: 1;
+}
+
+.detailCard p {
+    margin: 0;
+}
+
+.detailCard ul,
+.detailCard ol {
+    margin: 0.25rem 0;
+    padding-left: 1.25rem;
+}
+
+.detailCard a {
+    color: var(--secondary-500);
+    text-decoration: underline;
+}
+
+.detailCard a:hover {
+    color: var(--secondary-700);
 }
 
 .detailTitle {

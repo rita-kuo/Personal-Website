@@ -1,5 +1,6 @@
 import { useFormContext } from 'react-hook-form';
 import styles from '../itinerary.module.css';
+import QuillEditor from '@/app/sys-console/_components/QuillEditor';
 
 type ItineraryItem = {
     id: number;
@@ -86,8 +87,20 @@ export default function ItineraryItemEditor({
     const {
         register,
         getValues,
+        setValue,
+        watch,
         formState: { errors },
     } = useFormContext<FormValues>();
+
+    const memoValue = watch('memo');
+
+    const handleMemoChange = (html: string) => {
+        const isEmpty = !html || html.replace(/<[^>]*>/g, '').trim() === '';
+        const clean = isEmpty ? '' : html;
+        if (clean === memoValue) return;
+        setValue('memo', clean, { shouldDirty: true });
+        updateSelectedItem({ memo: clean || null });
+    };
 
     return (
         <article className={`${styles.card} ${styles.detailCard}`}>
@@ -258,26 +271,14 @@ export default function ItineraryItemEditor({
                             </span>
                         )}
                     </label>
-                    <label className={styles.formLabel}>
-                        {t.labels.memo}
-                        <textarea
-                            className={styles.textarea}
-                            rows={4}
-                            {...register('memo', {
-                                validate: (value) =>
-                                    value.length <= 500 || t.validation.tooLong,
-                                onChange: (event) =>
-                                    updateSelectedItem({
-                                        memo: event.target.value || null,
-                                    }),
-                            })}
+                    <div className={styles.formLabel}>
+                        <span>{t.labels.memo}</span>
+                        <QuillEditor
+                            className={styles.quillWrapper}
+                            value={memoValue}
+                            onChange={handleMemoChange}
                         />
-                        {errors.memo && (
-                            <span className={styles.errorText}>
-                                {errors.memo.message}
-                            </span>
-                        )}
-                    </label>
+                    </div>
                 </form>
             )}
         </article>

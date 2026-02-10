@@ -273,9 +273,12 @@ export default function ItineraryTimeline({ messages, trip }: Props) {
                                         </div>
                                     </div>
                                     {item.memo && (
-                                        <article className={styles.detailCard}>
-                                            {item.memo}
-                                        </article>
+                                        <article
+                                            className={styles.detailCard}
+                                            dangerouslySetInnerHTML={{
+                                                __html: item.memo,
+                                            }}
+                                        />
                                     )}
                                 </div>
                             </div>

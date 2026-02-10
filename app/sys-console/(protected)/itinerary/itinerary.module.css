@@ -360,14 +360,17 @@
     gap: 0.75rem;
 }
 
-.input,
-.textarea {
+.input {
     width: 100%;
 }
 
-.textarea {
+.quillWrapper :global(.ql-container) {
     min-height: 120px;
-    resize: vertical;
+    font-size: 0.9rem;
+}
+
+.quillWrapper :global(.ql-editor) {
+    min-height: 120px;
 }
 
 .errorText {
