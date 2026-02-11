@@ -58,7 +58,6 @@ export default function ItineraryTripForm({
         const result = await createItineraryTrip({
             title: values.title,
             startDate: values.startDate,
-            endDate: values.endDate || undefined,
             departureTitle: t.departureTitle,
         });
         setIsSaving(false);
