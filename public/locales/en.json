@@ -5,6 +5,10 @@
     },
     "itinerary": {
         "title": "Trip Itinerary",
+        "notFound": {
+            "title": "Page not found",
+            "description": "The page you are looking for does not exist or has been removed."
+        },
         "daySwitch": {
             "prev": "Previous day",
             "next": "Next day",
@@ -86,7 +90,11 @@
             "modal": {
                 "title": "New Itinerary",
                 "nameLabel": "Itinerary Title",
+                "slugLabel": "Slug",
                 "startDateLabel": "Start date",
+                "accessLabel": "Public trip",
+                "accessPublic": "Public",
+                "accessPrivate": "Private",
                 "cancel": "Cancel",
                 "create": "Create",
                 "creating": "Creating..."
@@ -134,6 +142,7 @@
                 "title": "Edit itinerary",
                 "nameLabel": "Title",
                 "slugLabel": "Slug",
+                "accessLabel": "Public trip",
                 "cancel": "Cancel",
                 "save": "Update",
                 "saving": "Saving..."

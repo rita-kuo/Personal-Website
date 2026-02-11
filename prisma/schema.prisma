@@ -11,6 +11,11 @@ enum ActionType {
   IOT
 }
 
+enum TripAccess {
+  PRIVATE
+  PUBLIC
+}
+
 model Game {
   id        Int      @id @default(autoincrement())
   name      String
@@ -62,6 +67,7 @@ model ItineraryTrip {
   id        Int            @id @default(autoincrement())
   title     String
   slug      String         @unique
+  access    TripAccess     @default(PRIVATE)
   days      ItineraryDay[]
   createdAt DateTime       @default(now())
   updatedAt DateTime       @default(now()) @updatedAt

@@ -28,7 +28,11 @@ type ItineraryListMessages = {
         modal: {
             title: string;
             nameLabel: string;
+            slugLabel: string;
             startDateLabel: string;
+            accessLabel: string;
+            accessPublic: string;
+            accessPrivate: string;
             cancel: string;
             create: string;
             creating: string;
@@ -41,7 +45,9 @@ type ItineraryListMessages = {
 
 type FormValues = {
     title: string;
+    slug: string;
     startDate: string;
+    isPublic: boolean;
 };
 
 const formatDateInput = (date: Date) => {
@@ -73,18 +79,30 @@ export default function ItineraryTripList({
     const [isOpen, setIsOpen] = useState(false);
     const [isSaving, setIsSaving] = useState(false);
     const { register, handleSubmit, reset, formState } = useForm<FormValues>({
-        defaultValues: { title: '', startDate: formatDateInput(new Date()) },
+        defaultValues: {
+            title: '',
+            slug: '',
+            startDate: formatDateInput(new Date()),
+            isPublic: false,
+        },
     });
 
     const closeModal = () => {
         setIsOpen(false);
-        reset({ title: '', startDate: formatDateInput(new Date()) });
+        reset({
+            title: '',
+            slug: '',
+            startDate: formatDateInput(new Date()),
+            isPublic: false,
+        });
     };
 
     const onSubmit = handleSubmit(async (values) => {
         setIsSaving(true);
         const result = await createItineraryTrip({
             title: values.title,
+            slug: values.slug || undefined,
+            access: values.isPublic ? 'PUBLIC' : 'PRIVATE',
             departureTitle: t.departureTitle,
             startDate: values.startDate,
         });
@@ -190,6 +208,15 @@ export default function ItineraryTripList({
                                 )}
                             </label>
                             <label className={modalStyles.formLabel}>
+                                {t.modal.slugLabel}
+                                <input
+                                    type='text'
+                                    className={modalStyles.input}
+                                    placeholder='my-trip'
+                                    {...register('slug')}
+                                />
+                            </label>
+                            <label className={modalStyles.formLabel}>
                                 {t.modal.startDateLabel || t.list.startDate}
                                 <input
                                     type='date'
@@ -203,6 +230,14 @@ export default function ItineraryTripList({
                                         {formState.errors.startDate.message}
                                     </span>
                                 )}
+                            </label>
+                            <label className={modalStyles.toggleLabel}>
+                                <input
+                                    type='checkbox'
+                                    role='switch'
+                                    {...register('isPublic')}
+                                />
+                                {t.modal.accessLabel}
                             </label>
                             <div className={modalStyles.actions}>
                                 <button

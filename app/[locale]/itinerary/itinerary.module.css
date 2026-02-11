@@ -446,6 +446,7 @@
     border-radius: 1rem;
     border: 1px dashed var(--primary-300);
     background: var(--primary-100);
+    margin: 1rem;
 }
 
 .emptyText {
@@ -499,4 +500,40 @@
     .detailHeader > .pageTitle {
         padding: 0;
     }
+}
+
+.notFoundPage {
+    display: grid;
+    place-items: center;
+    min-height: 80vh;
+    padding: 1.5rem;
+}
+
+.notFoundCard {
+    position: relative;
+    overflow: hidden;
+    max-width: 400px;
+    width: 100%;
+    padding: 0.5rem;
+    border: 1px solid var(--primary-300);
+    background: #ffffff;
+    border-radius: 1rem;
+    box-shadow: 0 8px 24px rgba(88, 70, 58, 0.08);
+    text-align: center;
+    padding: 3rem 2rem;
+}
+
+.notFoundIcon {
+    font-size: 5rem;
+    color: var(--secondary-300);
+}
+
+.notFoundTitle {
+    margin: 1rem 0 0;
+    color: var(--secondary-600);
+}
+
+.notFoundDescription {
+    margin: 0.75rem 0 0;
+    color: var(--primary-700);
 }

@@ -5,6 +5,10 @@
     },
     "itinerary": {
         "title": "旅遊行程",
+        "notFound": {
+            "title": "找不到此頁面",
+            "description": "您所尋找的頁面不存在或已被移除。"
+        },
         "daySwitch": {
             "prev": "前一天",
             "next": "後一天",
@@ -86,7 +90,11 @@
             "modal": {
                 "title": "新增行程",
                 "nameLabel": "行程名稱",
+                "slugLabel": "Slug",
                 "startDateLabel": "開始日期",
+                "accessLabel": "公開行程",
+                "accessPublic": "公開",
+                "accessPrivate": "私人",
                 "cancel": "取消",
                 "create": "建立",
                 "creating": "建立中..."
@@ -134,6 +142,7 @@
                 "title": "編輯行程",
                 "nameLabel": "行程名稱",
                 "slugLabel": "Slug",
+                "accessLabel": "公開行程",
                 "cancel": "取消",
                 "save": "更新",
                 "saving": "儲存中..."

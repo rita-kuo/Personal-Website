@@ -1,4 +1,6 @@
 import { Metadata } from 'next';
+import { TripAccess } from '@prisma/client';
+import { auth } from '@/lib/auth';
 import { getMessages } from '@/lib/getMessages';
 import { getItineraryTrips } from '@/lib/itinerary';
 import ItineraryTripList from './_components/ItineraryTripList';
@@ -18,8 +20,10 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 export default async function ItineraryPage({ params }: Props) {
     const resolved = await params;
     const locale = resolved.locale;
+    const session = await auth();
     const { messages } = await getMessages(locale, 'itinerary');
-    const trips = await getItineraryTrips();
+    const accessFilter = session ? undefined : TripAccess.PUBLIC;
+    const trips = await getItineraryTrips({ access: accessFilter });
 
     return (
         <ItineraryTripList

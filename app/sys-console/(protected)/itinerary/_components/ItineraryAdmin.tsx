@@ -80,12 +80,14 @@ export default function ItineraryAdmin({
     tripId,
     tripTitle: initialTripTitle,
     tripSlug: initialTripSlug,
+    tripAccess: initialTripAccess,
 }: {
     messages: ItineraryAdminMessages;
     days: ItineraryDay[];
     tripId: number;
     tripTitle: string;
     tripSlug: string;
+    tripAccess: string;
 }) {
     const t = messages.itinerary;
     const router = useRouter();
@@ -94,6 +96,7 @@ export default function ItineraryAdmin({
     const [selectedItemId, setSelectedItemId] = useState<number | null>(null);
     const [tripTitle, setTripTitle] = useState(initialTripTitle);
     const [tripSlug, setTripSlug] = useState(initialTripSlug);
+    const [tripAccess, setTripAccess] = useState(initialTripAccess);
     const [isItemsDirty, setIsItemsDirty] = useState(false);
     const [isSavingTrip, setIsSavingTrip] = useState(false);
     const [tripSaveError, setTripSaveError] = useState('');
@@ -359,7 +362,11 @@ export default function ItineraryAdmin({
         setIsEditDayModalOpen(false);
     };
 
-    const handleTripMetaSave = async (nextTitle: string, nextSlug: string) => {
+    const handleTripMetaSave = async (
+        nextTitle: string,
+        nextSlug: string,
+        nextIsPublic: boolean,
+    ) => {
         setIsSavingTrip(true);
         setTripSaveError('');
 
@@ -367,6 +374,7 @@ export default function ItineraryAdmin({
             tripId,
             title: nextTitle,
             slug: nextSlug,
+            access: nextIsPublic ? 'PUBLIC' : 'PRIVATE',
         });
 
         setIsSavingTrip(false);
@@ -383,6 +391,7 @@ export default function ItineraryAdmin({
         if (result?.trip) {
             setTripTitle(result.trip.title);
             setTripSlug(result.trip.slug);
+            setTripAccess(result.trip.access);
         }
     };
 
@@ -661,10 +670,12 @@ export default function ItineraryAdmin({
                         isOpen={isEditTripModalOpen}
                         title={tripTitle}
                         slug={tripSlug}
+                        isPublic={tripAccess === 'PUBLIC'}
                         labels={{
                             title: t.tripModal.title,
                             nameLabel: t.tripModal.nameLabel,
                             slugLabel: t.tripModal.slugLabel,
+                            accessLabel: t.tripModal.accessLabel,
                             cancel: t.tripModal.cancel,
                             save: t.tripModal.save,
                         }}

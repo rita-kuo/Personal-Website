@@ -1,7 +1,7 @@
 'use server';
 
 import prisma from '@/lib/db';
-import { Prisma } from '@prisma/client';
+import { Prisma, TripAccess } from '@prisma/client';
 
 type UpdatePayload = {
     dayId: number;
@@ -63,6 +63,7 @@ type UpdateTripMetaPayload = {
     tripId: number;
     title: string;
     slug: string;
+    access?: TripAccess;
 };
 
 type UpdateTripMetaResult = {
@@ -70,6 +71,7 @@ type UpdateTripMetaResult = {
         id: number;
         title: string;
         slug: string;
+        access: TripAccess;
     };
     error?: 'TRIP_NOT_FOUND' | 'SLUG_EXISTS' | 'SAVE_FAILED';
 };
@@ -84,6 +86,8 @@ type DeleteTripResult = {
 
 type CreateTripPayload = {
     title: string;
+    slug?: string;
+    access?: TripAccess;
     departureTitle: string;
     startDate: string;
 };
@@ -514,6 +518,9 @@ export async function updateItineraryTripMeta(
             data: {
                 title: payload.title,
                 slug: payload.slug,
+                ...(payload.access !== undefined
+                    ? { access: payload.access }
+                    : {}),
             },
         });
 
@@ -522,6 +529,7 @@ export async function updateItineraryTripMeta(
                 id: trip.id,
                 title: trip.title,
                 slug: trip.slug,
+                access: trip.access,
             },
         };
     } catch (error) {
@@ -561,7 +569,7 @@ export async function deleteItineraryTrip(
 }
 
 export async function createItineraryTrip(payload: CreateTripPayload) {
-    const slug = `trip-${Date.now()}`;
+    const slug = payload.slug?.trim() || `trip-${Date.now()}`;
     const dayDate = startOfDate(payload.startDate);
     if (!dayDate) return { error: 'INVALID_DATE' };
 
@@ -569,6 +577,7 @@ export async function createItineraryTrip(payload: CreateTripPayload) {
         data: {
             title: payload.title,
             slug,
+            access: payload.access ?? TripAccess.PRIVATE,
             days: {
                 create: {
                     date: dayDate,

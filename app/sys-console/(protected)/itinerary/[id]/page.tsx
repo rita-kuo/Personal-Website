@@ -57,6 +57,7 @@ export default async function ItineraryTripPage({ params }: Props) {
             tripId={tripId}
             tripTitle={trip.title}
             tripSlug={trip.slug}
+            tripAccess={trip.access}
         />
     );
 }

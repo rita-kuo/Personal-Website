@@ -1,4 +1,5 @@
 import prisma from '@/lib/db';
+import { TripAccess } from '@prisma/client';
 
 type ItineraryItemDTO = {
     id: number;
@@ -21,6 +22,7 @@ export type ItineraryTripDTO = {
     id: number;
     title: string;
     slug: string;
+    access: string;
     days: ItineraryDayDTO[];
 };
 
@@ -34,9 +36,17 @@ type ItineraryTripListItemDTO = {
 
 const toIso = (value: Date | null) => (value ? value.toISOString() : null);
 
-export async function getLatestItineraryTrip(): Promise<ItineraryTripDTO | null> {
+// TODO: 如果實作公開頁面登入，需另外處理 PRIVATE 權限檢查邏輯
+type AccessFilter = {
+    access?: TripAccess;
+};
+
+export async function getLatestItineraryTrip(
+    filter?: AccessFilter,
+): Promise<ItineraryTripDTO | null> {
     const trip = await prisma.itineraryTrip.findFirst({
         orderBy: { createdAt: 'desc' },
+        where: filter?.access ? { access: filter.access } : undefined,
         include: {
             days: {
                 orderBy: [{ date: 'asc' }],
@@ -55,6 +65,7 @@ export async function getLatestItineraryTrip(): Promise<ItineraryTripDTO | null>
         id: trip.id,
         title: trip.title,
         slug: trip.slug,
+        access: trip.access,
         days: trip.days.map((day: (typeof trip.days)[number]) => ({
             id: day.id,
             date: day.date.toISOString(),
@@ -72,9 +83,12 @@ export async function getLatestItineraryTrip(): Promise<ItineraryTripDTO | null>
     };
 }
 
-export async function getItineraryTrips(): Promise<ItineraryTripListItemDTO[]> {
+export async function getItineraryTrips(
+    filter?: AccessFilter,
+): Promise<ItineraryTripListItemDTO[]> {
     const trips = await prisma.itineraryTrip.findMany({
         orderBy: { createdAt: 'desc' },
+        where: filter?.access ? { access: filter.access } : undefined,
         include: {
             days: {
                 orderBy: [{ date: 'asc' }],
@@ -98,9 +112,13 @@ export async function getItineraryTrips(): Promise<ItineraryTripListItemDTO[]> {
 
 export async function getItineraryTripBySlug(
     slug: string,
+    filter?: AccessFilter,
 ): Promise<ItineraryTripDTO | null> {
-    const trip = await prisma.itineraryTrip.findUnique({
-        where: { slug },
+    const trip = await prisma.itineraryTrip.findFirst({
+        where: {
+            slug,
+            ...(filter?.access ? { access: filter.access } : {}),
+        },
         include: {
             days: {
                 orderBy: [{ date: 'asc' }],
@@ -119,6 +137,7 @@ export async function getItineraryTripBySlug(
         id: trip.id,
         title: trip.title,
         slug: trip.slug,
+        access: trip.access,
         days: trip.days.map((day: (typeof trip.days)[number]) => ({
             id: day.id,
             date: day.date.toISOString(),
@@ -159,6 +178,7 @@ export async function getItineraryTripById(
         id: trip.id,
         title: trip.title,
         slug: trip.slug,
+        access: trip.access,
         days: trip.days.map((day: (typeof trip.days)[number]) => ({
             id: day.id,
             date: day.date.toISOString(),

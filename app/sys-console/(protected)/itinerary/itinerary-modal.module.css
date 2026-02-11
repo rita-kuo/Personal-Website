@@ -93,6 +93,19 @@
     font-size: 0.75rem;
 }
 
+.toggleLabel {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.85rem;
+    color: var(--primary-800);
+    cursor: pointer;
+}
+
+.toggleLabel input[type='checkbox'] {
+    margin: 0;
+}
+
 .actions {
     display: flex;
     justify-content: flex-end;

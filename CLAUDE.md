@@ -23,7 +23,7 @@ Next.js 16 App Router project (TypeScript, React 18) with two distinct route gro
 
 - **Styling**: Pico CSS for semantic HTML styling + CSS Modules (`.module.css`) for custom styles. No inline `style={{}}` attributes. Icons from `remixicon`.
 - **Database**: PostgreSQL via Prisma ORM with `pg` adapter (`lib/db.ts`). Schema at `prisma/schema.prisma`.
-- **i18n**: All user-facing text must go through `next-intl` / locale JSON files. No hardcoded strings. The `lib/getMessages.ts` loads from `public/locales/` JSON files.
+- **i18n**: **Every single user-visible string** (labels, titles, descriptions, error messages, placeholders, not-found pages, etc.) must go through locale JSON files. **Never hardcode display text in components.** Always add keys to both `public/locales/en.json` and `public/locales/zh-tw.json`. The `lib/getMessages.ts` loads from these files.
 - **Forms**: React Hook Form with `zod` validation. Subcomponents use `useFormContext`.
 - **Drag & Drop**: `@dnd-kit` for sortable UI (used in game levels, itinerary days).
 - **Auth**: NextAuth v5 beta with Prisma adapter, LINE OAuth provider, JWT sessions. Whitelist-based (user must exist in DB).

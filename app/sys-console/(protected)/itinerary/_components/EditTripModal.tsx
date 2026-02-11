@@ -5,22 +5,25 @@ type EditTripModalProps = {
     isOpen: boolean;
     title: string;
     slug: string;
+    isPublic: boolean;
     labels: {
         title: string;
         nameLabel: string;
         slugLabel: string;
+        accessLabel: string;
         cancel: string;
         save: string;
     };
     requiredMessage: string;
     onClose: () => void;
-    onSave: (nextTitle: string, nextSlug: string) => void;
+    onSave: (nextTitle: string, nextSlug: string, nextIsPublic: boolean) => void;
 };
 
 export default function EditTripModal({
     isOpen,
     title,
     slug,
+    isPublic,
     labels,
     requiredMessage,
     onClose,
@@ -28,6 +31,7 @@ export default function EditTripModal({
 }: EditTripModalProps) {
     const [editTitle, setEditTitle] = useState(title);
     const [editSlug, setEditSlug] = useState(slug);
+    const [editIsPublic, setEditIsPublic] = useState(isPublic);
     const [error, setError] = useState('');
     const [isVisible, setIsVisible] = useState(isOpen);
     const [isClosing, setIsClosing] = useState(false);
@@ -37,8 +41,9 @@ export default function EditTripModal({
         if (!isOpen) return;
         setEditTitle(title);
         setEditSlug(slug);
+        setEditIsPublic(isPublic);
         setError('');
-    }, [isOpen, slug, title]);
+    }, [isOpen, slug, title, isPublic]);
 
     useEffect(() => {
         if (isOpen) {
@@ -70,7 +75,7 @@ export default function EditTripModal({
             setError(requiredMessage);
             return;
         }
-        onSave(editTitle.trim(), editSlug.trim());
+        onSave(editTitle.trim(), editSlug.trim(), editIsPublic);
         onClose();
     };
 
@@ -122,6 +127,17 @@ export default function EditTripModal({
                                 setEditSlug(event.target.value)
                             }
                         />
+                    </label>
+                    <label className={modalStyles.toggleLabel}>
+                        <input
+                            type='checkbox'
+                            role='switch'
+                            checked={editIsPublic}
+                            onChange={(e) =>
+                                setEditIsPublic(e.target.checked)
+                            }
+                        />
+                        {labels.accessLabel}
                     </label>
                     {error && (
                         <span className={modalStyles.errorText}>{error}</span>

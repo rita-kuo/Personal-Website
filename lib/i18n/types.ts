@@ -38,6 +38,7 @@ export type ItineraryAdminMessages = {
             title: string;
             nameLabel: string;
             slugLabel: string;
+            accessLabel: string;
             cancel: string;
             save: string;
             saving: string;
