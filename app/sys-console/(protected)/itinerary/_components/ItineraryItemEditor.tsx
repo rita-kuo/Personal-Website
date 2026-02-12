@@ -1,3 +1,4 @@
+import { useEffect, useRef } from 'react';
 import { useFormContext } from 'react-hook-form';
 import styles from '../itinerary.module.css';
 import QuillEditor from '@/app/sys-console/_components/QuillEditor';
@@ -94,12 +95,24 @@ export default function ItineraryItemEditor({
 
     const memoValue = watch('memo');
 
+    const isResettingRef = useRef(false);
+
+    useEffect(() => {
+        isResettingRef.current = true;
+        const timer = setTimeout(() => {
+            isResettingRef.current = false;
+        }, 100);
+        return () => clearTimeout(timer);
+    }, [selectedItem?.id]);
+
     const handleMemoChange = (html: string) => {
         const isEmpty = !html || html.replace(/<[^>]*>/g, '').trim() === '';
         const clean = isEmpty ? '' : html;
         if (clean === memoValue) return;
-        setValue('memo', clean, { shouldDirty: true });
-        updateSelectedItem({ memo: clean || null });
+        setValue('memo', clean);
+        if (!isResettingRef.current) {
+            updateSelectedItem({ memo: clean || null });
+        }
     };
 
     return (
