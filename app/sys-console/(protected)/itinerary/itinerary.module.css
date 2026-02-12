@@ -364,6 +364,13 @@
     width: 100%;
 }
 
+.quillWrapper :global(.ql-toolbar) {
+    position: sticky;
+    top: 0;
+    z-index: 1;
+    background: #ffffff;
+}
+
 .quillWrapper :global(.ql-container) {
     min-height: 120px;
     font-size: 0.9rem;

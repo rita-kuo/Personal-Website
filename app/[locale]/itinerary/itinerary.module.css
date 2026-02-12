@@ -389,12 +389,19 @@
 
 .detailCard p {
     margin: 0;
+    min-height: 1.4em;
 }
 
 .detailCard ul,
 .detailCard ol {
     margin: 0.25rem 0;
     padding-left: 1.25rem;
+}
+
+.detailCard img {
+    max-width: 100%;
+    height: auto;
+    border-radius: 0.5rem;
 }
 
 .detailCard a {

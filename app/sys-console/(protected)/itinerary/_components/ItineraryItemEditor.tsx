@@ -106,7 +106,9 @@ export default function ItineraryItemEditor({
     }, [selectedItem?.id]);
 
     const handleMemoChange = (html: string) => {
-        const isEmpty = !html || html.replace(/<[^>]*>/g, '').trim() === '';
+        const hasText = html && html.replace(/<[^>]*>/g, '').trim() !== '';
+        const hasImage = html && html.includes('<img');
+        const isEmpty = !hasText && !hasImage;
         const clean = isEmpty ? '' : html;
         if (clean === memoValue) return;
         setValue('memo', clean);
