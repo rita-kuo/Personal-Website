@@ -1,10 +1,11 @@
 'use client';
 
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { usePathname } from 'next/navigation';
 import styles from '../itinerary.module.css';
 import Link from 'next/link';
 import { ItineraryTripDTO } from '@/lib/itinerary';
+import ImageLightbox from '@/app/[locale]/_components/ImageLightbox';
 
 type ItineraryItem = {
     id: number;
@@ -167,6 +168,19 @@ export default function ItineraryTimeline({ messages, trip }: Props) {
     const selectedDay = days[selectedDayIndex];
     const items = selectedDay?.items ?? [];
     const selectedItem = items.find((item) => item.id === selectedItemId);
+
+    const [lightboxSrc, setLightboxSrc] = useState<string | null>(null);
+
+    const handleMemoClick = useCallback(
+        (e: React.MouseEvent<HTMLElement>) => {
+            const target = e.target as HTMLElement;
+            if (target.tagName === 'IMG') {
+                e.preventDefault();
+                setLightboxSrc((target as HTMLImageElement).src);
+            }
+        },
+        [],
+    );
 
     const handlePrevDay = () => {
         if (!hasDays) return;
@@ -344,6 +358,7 @@ export default function ItineraryTimeline({ messages, trip }: Props) {
                                             dangerouslySetInnerHTML={{
                                                 __html: item.memo,
                                             }}
+                                            onClick={handleMemoClick}
                                         />
                                     )}
                                 </div>
@@ -358,6 +373,10 @@ export default function ItineraryTimeline({ messages, trip }: Props) {
                     ))}
                 </ol>
             )}
+            <ImageLightbox
+                src={lightboxSrc}
+                onClose={() => setLightboxSrc(null)}
+            />
         </main>
     );
 }

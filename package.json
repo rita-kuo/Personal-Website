@@ -32,6 +32,7 @@
         "react-dom": "^18.2.0",
         "react-hook-form": "^7.69.0",
         "react-quill-new": "^3.8.3",
+        "react-zoom-pan-pinch": "^3.7.0",
         "remixicon": "^4.7.0",
         "zod": "^4.2.1"
     },
