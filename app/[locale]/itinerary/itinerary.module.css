@@ -24,9 +24,9 @@
 .detailHeader {
     position: sticky;
     top: 0;
-    background-color: var(--primary-100);
     padding: 1rem;
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    background-color: var(--primary-500);
 }
 
 .detailHeader > .pageTitle {
@@ -35,19 +35,24 @@
 
 .pageTitle {
     margin: 0;
-    padding: 1rem 1rem 0 1rem;
-    color: var(--secondary-600);
+    padding: 1rem;
+    color: white;
     display: flex;
     align-items: center;
     gap: 0.5rem;
+    background-color: var(--primary-500);
+}
+
+.page > .pageTitle {
+    padding-bottom: 0;
 }
 
 .pageTitle > a {
-    color: var(--primary-700);
+    color: var(--secondary-300);
 }
 
 .pageTitle > a:hover {
-    color: var(--primary-600);
+    color: white;
 }
 
 .backLink {
@@ -56,6 +61,7 @@
     font-size: 1.5rem;
     display: inline-flex;
     align-items: center;
+    margin-right: 1rem;
 }
 
 .backLink:hover {
@@ -144,14 +150,10 @@
     outline: none;
     background-color: transparent;
     font-size: large;
-    color: var(--primary-800);
+    color: white;
     transition: all 0.2s ease;
-    font-weight: bold;
+    font-weight: bolder;
     cursor: pointer;
-}
-
-.dayButton:hover:not(:disabled) {
-    color: var(--primary-600);
 }
 
 .dayButton:disabled {
