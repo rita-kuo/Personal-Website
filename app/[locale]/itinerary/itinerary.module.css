@@ -24,6 +24,7 @@
 .detailHeader {
     position: sticky;
     top: 0;
+    z-index: 10;
     padding: 1rem;
     box-shadow: 0 4px 12px rgba(88, 70, 58, 0.15);
     background-color: var(--primary-800);
@@ -383,6 +384,54 @@
     gap: 1rem;
 }
 
+.memoToggle {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+}
+
+.memoToggleButton {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.25rem;
+    background: none;
+    border: none;
+    padding: 0.25rem 0;
+    font-size: small;
+    color: var(--secondary-500);
+    cursor: pointer;
+    font-weight: 600;
+    transition: color 0.2s ease;
+}
+
+.memoToggleButton:hover {
+    color: var(--secondary-700);
+}
+
+.memoCollapsible {
+    display: grid;
+    grid-template-rows: 0fr;
+    opacity: 0;
+    transition: grid-template-rows 0.3s ease, opacity 0.3s ease;
+}
+
+.memoCollapsible > .detailCard {
+    overflow: hidden;
+    padding: 0;
+    border-width: 0;
+    transition: padding 0.3s ease, border-width 0.3s ease;
+}
+
+.memoOpen {
+    grid-template-rows: 1fr;
+    opacity: 1;
+}
+
+.memoOpen > .detailCard {
+    padding: 0.5rem;
+    border-width: 2px;
+}
+
 .detailCard {
     padding: 0.5rem;
     border-radius: 0.5rem;
@@ -500,6 +549,20 @@
         display: flex;
         justify-content: space-between;
         align-items: end;
+    }
+
+    .memoCollapsible {
+        grid-template-rows: 1fr;
+        opacity: 1;
+    }
+
+    .memoCollapsible > .detailCard {
+        padding: 0.5rem;
+        border-width: 2px;
+    }
+
+    .memoToggleButton {
+        display: none;
     }
 
     .pageTitle {

@@ -40,6 +40,8 @@ type ItineraryMessages = {
         memo: string;
         detailTitle: string;
         noMemo: string;
+        viewDetails: string;
+        collapseDetails: string;
         emptyDay: string;
         emptySelection: string;
         noLinks: string;
@@ -170,6 +172,19 @@ export default function ItineraryTimeline({ messages, trip }: Props) {
     const selectedItem = items.find((item) => item.id === selectedItemId);
 
     const [lightboxSrc, setLightboxSrc] = useState<string | null>(null);
+    const [expandedMemos, setExpandedMemos] = useState<Set<number>>(new Set());
+
+    const toggleMemo = useCallback((itemId: number) => {
+        setExpandedMemos((prev) => {
+            const next = new Set(prev);
+            if (next.has(itemId)) {
+                next.delete(itemId);
+            } else {
+                next.add(itemId);
+            }
+            return next;
+        });
+    }, []);
 
     const handleMemoClick = useCallback(
         (e: React.MouseEvent<HTMLElement>) => {
@@ -353,13 +368,25 @@ export default function ItineraryTimeline({ messages, trip }: Props) {
                                         </div>
                                     </div>
                                     {item.memo && (
-                                        <article
-                                            className={styles.detailCard}
-                                            dangerouslySetInnerHTML={{
-                                                __html: item.memo,
-                                            }}
-                                            onClick={handleMemoClick}
-                                        />
+                                        <div className={styles.memoToggle}>
+                                            <div className={`${styles.memoCollapsible} ${expandedMemos.has(item.id) ? styles.memoOpen : ''}`}>
+                                                <article
+                                                    className={styles.detailCard}
+                                                    dangerouslySetInnerHTML={{
+                                                        __html: item.memo,
+                                                    }}
+                                                    onClick={handleMemoClick}
+                                                />
+                                            </div>
+                                            <button
+                                                type="button"
+                                                className={styles.memoToggleButton}
+                                                onClick={() => toggleMemo(item.id)}
+                                            >
+                                                <i className={expandedMemos.has(item.id) ? 'ri-arrow-up-s-line' : 'ri-arrow-down-s-line'} aria-hidden="true" />
+                                                {expandedMemos.has(item.id) ? messages.labels.collapseDetails : messages.labels.viewDetails}
+                                            </button>
+                                        </div>
                                     )}
                                 </div>
                             </div>

@@ -26,6 +26,8 @@
             "memo": "Memo",
             "detailTitle": "Details",
             "noMemo": "No memo yet",
+            "viewDetails": "View details",
+            "collapseDetails": "Collapse details",
             "emptyDay": "No itinerary items for this day.",
             "emptySelection": "Select an item with memo to view details.",
             "noLinks": "No links yet",

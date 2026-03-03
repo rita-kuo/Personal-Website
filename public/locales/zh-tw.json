@@ -26,6 +26,8 @@
             "memo": "備註",
             "detailTitle": "詳細內容",
             "noMemo": "尚無備註",
+            "viewDetails": "查看詳情",
+            "collapseDetails": "收合詳情",
             "emptyDay": "今日沒有行程",
             "emptySelection": "請選擇有備註的行程以查看詳細內容",
             "noLinks": "尚無連結",
